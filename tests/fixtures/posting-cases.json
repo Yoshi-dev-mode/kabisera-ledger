@@ -1,0 +1,695 @@
+{
+ "_comment": "Hand-derived expected postings (positive = debit, negative = credit). Shared by tests/unit/postings.test.ts and the generated supabase/tests/phase3_ledger.sql. $C1 stands for a customer created by the SQL test. Cases with rpc = null are covered by the Phase 5 SQL test (they need an existing debt id).",
+ "customers": [
+  "C1"
+ ],
+ "cases": [
+  {
+   "name": "opening balances (counted by the owner)",
+   "input": {
+    "type": "opening_balance",
+    "cashCents": 10000000,
+    "gcashCents": 20000000,
+    "loadCents": 3000000
+   },
+   "lines": [
+    {
+     "account": "CASH_DRAWER",
+     "customer": null,
+     "amountCents": 10000000
+    },
+    {
+     "account": "GCASH_WALLET",
+     "customer": null,
+     "amountCents": 20000000
+    },
+    {
+     "account": "LOAD_BALANCE",
+     "customer": null,
+     "amountCents": 3000000
+    },
+    {
+     "account": "OPENING_BALANCE_EQUITY",
+     "customer": null,
+     "amountCents": -33000000
+    }
+   ],
+   "profitCents": 0,
+   "rpc": {
+    "fn": "post_opening_balances",
+    "args": {
+     "p_cash_cents": 10000000,
+     "p_gcash_cents": 20000000,
+     "p_load_cents": 3000000
+    }
+   }
+  },
+  {
+   "name": "cash-in 1000.00, fee 20.00 on top, paid in cash",
+   "input": {
+    "type": "cash_in",
+    "principalCents": 100000,
+    "feeCents": 2000,
+    "feeMode": "on_top"
+   },
+   "lines": [
+    {
+     "account": "CASH_DRAWER",
+     "customer": null,
+     "amountCents": 102000
+    },
+    {
+     "account": "FEE_INCOME",
+     "customer": null,
+     "amountCents": -2000
+    },
+    {
+     "account": "GCASH_WALLET",
+     "customer": null,
+     "amountCents": -100000
+    }
+   ],
+   "profitCents": 2000,
+   "rpc": {
+    "fn": "post_cash_in",
+    "args": {
+     "p_customer_id": null,
+     "p_principal_cents": 100000,
+     "p_fee_cents": 2000,
+     "p_fee_mode": "on_top"
+    }
+   }
+  },
+  {
+   "name": "cash-in on top, customer pays 500.00 now and owes the rest",
+   "input": {
+    "type": "cash_in",
+    "principalCents": 100000,
+    "feeCents": 2000,
+    "feeMode": "on_top",
+    "creditCents": 52000,
+    "customerId": "C1"
+   },
+   "lines": [
+    {
+     "account": "CASH_DRAWER",
+     "customer": null,
+     "amountCents": 50000
+    },
+    {
+     "account": "CUSTOMER_RECEIVABLES",
+     "customer": "C1",
+     "amountCents": 52000
+    },
+    {
+     "account": "FEE_INCOME",
+     "customer": null,
+     "amountCents": -2000
+    },
+    {
+     "account": "GCASH_WALLET",
+     "customer": null,
+     "amountCents": -100000
+    }
+   ],
+   "profitCents": 2000,
+   "rpc": {
+    "fn": "post_cash_in",
+    "args": {
+     "p_customer_id": "$C1",
+     "p_principal_cents": 100000,
+     "p_fee_cents": 2000,
+     "p_fee_mode": "on_top",
+     "p_credit_cents": 52000
+    }
+   }
+  },
+  {
+   "name": "cash-in 1000.00 with the fee deducted (wallet gets 980.00)",
+   "input": {
+    "type": "cash_in",
+    "principalCents": 100000,
+    "feeCents": 2000,
+    "feeMode": "deducted"
+   },
+   "lines": [
+    {
+     "account": "CASH_DRAWER",
+     "customer": null,
+     "amountCents": 100000
+    },
+    {
+     "account": "FEE_INCOME",
+     "customer": null,
+     "amountCents": -2000
+    },
+    {
+     "account": "GCASH_WALLET",
+     "customer": null,
+     "amountCents": -98000
+    }
+   ],
+   "profitCents": 2000,
+   "rpc": {
+    "fn": "post_cash_in",
+    "args": {
+     "p_customer_id": null,
+     "p_principal_cents": 100000,
+     "p_fee_cents": 2000,
+     "p_fee_mode": "deducted"
+    }
+   }
+  },
+  {
+   "name": "cash-in with a 5.00 provider cost paid from the wallet",
+   "input": {
+    "type": "cash_in",
+    "principalCents": 50000,
+    "feeCents": 1500,
+    "feeMode": "on_top",
+    "providerCostCents": 500
+   },
+   "lines": [
+    {
+     "account": "CASH_DRAWER",
+     "customer": null,
+     "amountCents": 51500
+    },
+    {
+     "account": "FEE_INCOME",
+     "customer": null,
+     "amountCents": -1500
+    },
+    {
+     "account": "GCASH_WALLET",
+     "customer": null,
+     "amountCents": -50500
+    },
+    {
+     "account": "PROVIDER_COST",
+     "customer": null,
+     "amountCents": 500
+    }
+   ],
+   "profitCents": 1000,
+   "rpc": {
+    "fn": "post_cash_in",
+    "args": {
+     "p_customer_id": null,
+     "p_principal_cents": 50000,
+     "p_fee_cents": 1500,
+     "p_fee_mode": "on_top",
+     "p_provider_cost_cents": 500
+    }
+   }
+  },
+  {
+   "name": "cash-out 1000.00 with the fee deducted (customer gets 980.00)",
+   "input": {
+    "type": "cash_out",
+    "principalCents": 100000,
+    "feeCents": 2000,
+    "feeMode": "deducted"
+   },
+   "lines": [
+    {
+     "account": "CASH_DRAWER",
+     "customer": null,
+     "amountCents": -98000
+    },
+    {
+     "account": "FEE_INCOME",
+     "customer": null,
+     "amountCents": -2000
+    },
+    {
+     "account": "GCASH_WALLET",
+     "customer": null,
+     "amountCents": 100000
+    }
+   ],
+   "profitCents": 2000,
+   "rpc": {
+    "fn": "post_cash_out",
+    "args": {
+     "p_customer_id": null,
+     "p_principal_cents": 100000,
+     "p_fee_cents": 2000,
+     "p_fee_mode": "deducted"
+    }
+   }
+  },
+  {
+   "name": "cash-out 1000.00 with the fee on top (wallet receives 1020.00)",
+   "input": {
+    "type": "cash_out",
+    "principalCents": 100000,
+    "feeCents": 2000,
+    "feeMode": "on_top"
+   },
+   "lines": [
+    {
+     "account": "CASH_DRAWER",
+     "customer": null,
+     "amountCents": -100000
+    },
+    {
+     "account": "FEE_INCOME",
+     "customer": null,
+     "amountCents": -2000
+    },
+    {
+     "account": "GCASH_WALLET",
+     "customer": null,
+     "amountCents": 102000
+    }
+   ],
+   "profitCents": 2000,
+   "rpc": {
+    "fn": "post_cash_out",
+    "args": {
+     "p_customer_id": null,
+     "p_principal_cents": 100000,
+     "p_fee_cents": 2000,
+     "p_fee_mode": "on_top"
+    }
+   }
+  },
+  {
+   "name": "cash-out deducted with a 7.00 provider cost",
+   "input": {
+    "type": "cash_out",
+    "principalCents": 50000,
+    "feeCents": 1500,
+    "feeMode": "deducted",
+    "providerCostCents": 700
+   },
+   "lines": [
+    {
+     "account": "CASH_DRAWER",
+     "customer": null,
+     "amountCents": -48500
+    },
+    {
+     "account": "FEE_INCOME",
+     "customer": null,
+     "amountCents": -1500
+    },
+    {
+     "account": "GCASH_WALLET",
+     "customer": null,
+     "amountCents": 49300
+    },
+    {
+     "account": "PROVIDER_COST",
+     "customer": null,
+     "amountCents": 700
+    }
+   ],
+   "profitCents": 800,
+   "rpc": {
+    "fn": "post_cash_out",
+    "args": {
+     "p_customer_id": null,
+     "p_principal_cents": 50000,
+     "p_fee_cents": 1500,
+     "p_fee_mode": "deducted",
+     "p_provider_cost_cents": 700
+    }
+   }
+  },
+  {
+   "name": "load 100.00 from the prepaid balance (cost 97.00), sold for cash",
+   "input": {
+    "type": "mobile_load",
+    "faceCents": 10000,
+    "costCents": 9700,
+    "priceCents": 10000,
+    "source": "prepaid_wallet",
+    "payment": "cash"
+   },
+   "lines": [
+    {
+     "account": "CASH_DRAWER",
+     "customer": null,
+     "amountCents": 10000
+    },
+    {
+     "account": "LOAD_BALANCE",
+     "customer": null,
+     "amountCents": -9700
+    },
+    {
+     "account": "LOAD_MARGIN",
+     "customer": null,
+     "amountCents": -300
+    }
+   ],
+   "profitCents": 300,
+   "rpc": {
+    "fn": "post_mobile_load",
+    "args": {
+     "p_customer_id": null,
+     "p_load_source": "prepaid_wallet",
+     "p_face_cents": 10000,
+     "p_cost_cents": 9700,
+     "p_price_cents": 10000,
+     "p_payment_method": "cash"
+    }
+   }
+  },
+  {
+   "name": "load bought straight from GCash (cost 97.00), customer pays 103.00 by GCash",
+   "input": {
+    "type": "mobile_load",
+    "faceCents": 10000,
+    "costCents": 9700,
+    "priceCents": 10300,
+    "source": "gcash_direct",
+    "payment": "gcash"
+   },
+   "lines": [
+    {
+     "account": "GCASH_WALLET",
+     "customer": null,
+     "amountCents": 600
+    },
+    {
+     "account": "LOAD_MARGIN",
+     "customer": null,
+     "amountCents": -600
+    }
+   ],
+   "profitCents": 600,
+   "rpc": {
+    "fn": "post_mobile_load",
+    "args": {
+     "p_customer_id": null,
+     "p_load_source": "gcash_direct",
+     "p_face_cents": 10000,
+     "p_cost_cents": 9700,
+     "p_price_cents": 10300,
+     "p_payment_method": "gcash"
+    }
+   }
+  },
+  {
+   "name": "load sold with 40.00 left unpaid",
+   "input": {
+    "type": "mobile_load",
+    "faceCents": 10000,
+    "costCents": 9700,
+    "priceCents": 10000,
+    "source": "prepaid_wallet",
+    "payment": "cash",
+    "creditCents": 4000,
+    "customerId": "C1"
+   },
+   "lines": [
+    {
+     "account": "CASH_DRAWER",
+     "customer": null,
+     "amountCents": 6000
+    },
+    {
+     "account": "CUSTOMER_RECEIVABLES",
+     "customer": "C1",
+     "amountCents": 4000
+    },
+    {
+     "account": "LOAD_BALANCE",
+     "customer": null,
+     "amountCents": -9700
+    },
+    {
+     "account": "LOAD_MARGIN",
+     "customer": null,
+     "amountCents": -300
+    }
+   ],
+   "profitCents": 300,
+   "rpc": {
+    "fn": "post_mobile_load",
+    "args": {
+     "p_customer_id": "$C1",
+     "p_load_source": "prepaid_wallet",
+     "p_face_cents": 10000,
+     "p_cost_cents": 9700,
+     "p_price_cents": 10000,
+     "p_payment_method": "cash",
+     "p_credit_cents": 4000
+    }
+   }
+  },
+  {
+   "name": "cash advance (utang) of 500.00 from the drawer",
+   "input": {
+    "type": "debt_creation",
+    "customerId": "C1",
+    "amountCents": 50000,
+    "source": "cash"
+   },
+   "lines": [
+    {
+     "account": "CASH_DRAWER",
+     "customer": null,
+     "amountCents": -50000
+    },
+    {
+     "account": "CUSTOMER_RECEIVABLES",
+     "customer": "C1",
+     "amountCents": 50000
+    }
+   ],
+   "profitCents": 0,
+   "rpc": {
+    "fn": "post_debt_creation",
+    "args": {
+     "p_customer_id": "$C1",
+     "p_amount_cents": 50000,
+     "p_source_method": "cash"
+    }
+   }
+  },
+  {
+   "name": "repayment of 300.00 in cash is not revenue",
+   "input": {
+    "type": "debt_repayment",
+    "customerId": "C1",
+    "amountCents": 30000,
+    "method": "cash"
+   },
+   "lines": [
+    {
+     "account": "CASH_DRAWER",
+     "customer": null,
+     "amountCents": 30000
+    },
+    {
+     "account": "CUSTOMER_RECEIVABLES",
+     "customer": "C1",
+     "amountCents": -30000
+    }
+   ],
+   "profitCents": 0,
+   "rpc": {
+    "fn": "post_repayment",
+    "args": {
+     "p_customer_id": "$C1",
+     "p_amount_cents": 30000,
+     "p_method": "cash"
+    }
+   }
+  },
+  {
+   "name": "expense of 50.00 paid in cash",
+   "input": {
+    "type": "expense",
+    "amountCents": 5000,
+    "method": "cash"
+   },
+   "lines": [
+    {
+     "account": "BUSINESS_EXPENSES",
+     "customer": null,
+     "amountCents": 5000
+    },
+    {
+     "account": "CASH_DRAWER",
+     "customer": null,
+     "amountCents": -5000
+    }
+   ],
+   "profitCents": -5000,
+   "rpc": {
+    "fn": "post_expense",
+    "args": {
+     "p_amount_cents": 5000,
+     "p_method": "cash"
+    }
+   }
+  },
+  {
+   "name": "move 1000.00 from the drawer into the wallet",
+   "input": {
+    "type": "float_adjustment",
+    "kind": "transfer_cash_to_gcash",
+    "amountCents": 100000
+   },
+   "lines": [
+    {
+     "account": "CASH_DRAWER",
+     "customer": null,
+     "amountCents": -100000
+    },
+    {
+     "account": "GCASH_WALLET",
+     "customer": null,
+     "amountCents": 100000
+    }
+   ],
+   "profitCents": 0,
+   "rpc": {
+    "fn": "post_float_adjustment",
+    "args": {
+     "p_kind": "transfer_cash_to_gcash",
+     "p_amount_cents": 100000
+    }
+   }
+  },
+  {
+   "name": "buy 5,000.00 of load balance from the wallet",
+   "input": {
+    "type": "float_adjustment",
+    "kind": "load_topup",
+    "amountCents": 500000,
+    "fromAccount": "GCASH_WALLET"
+   },
+   "lines": [
+    {
+     "account": "GCASH_WALLET",
+     "customer": null,
+     "amountCents": -500000
+    },
+    {
+     "account": "LOAD_BALANCE",
+     "customer": null,
+     "amountCents": 500000
+    }
+   ],
+   "profitCents": 0,
+   "rpc": {
+    "fn": "post_float_adjustment",
+    "args": {
+     "p_kind": "load_topup",
+     "p_amount_cents": 500000,
+     "p_account": "GCASH_WALLET"
+    }
+   }
+  },
+  {
+   "name": "owner adds 2,000.00 capital to the drawer",
+   "input": {
+    "type": "owner_capital",
+    "kind": "capital_contribution",
+    "amountCents": 200000,
+    "account": "CASH_DRAWER"
+   },
+   "lines": [
+    {
+     "account": "CASH_DRAWER",
+     "customer": null,
+     "amountCents": 200000
+    },
+    {
+     "account": "OWNER_EQUITY",
+     "customer": null,
+     "amountCents": -200000
+    }
+   ],
+   "profitCents": 0,
+   "rpc": {
+    "fn": "post_float_adjustment",
+    "args": {
+     "p_kind": "capital_contribution",
+     "p_amount_cents": 200000,
+     "p_account": "CASH_DRAWER"
+    }
+   }
+  },
+  {
+   "name": "owner withdraws 1,000.00 from the wallet",
+   "input": {
+    "type": "owner_capital",
+    "kind": "capital_withdrawal",
+    "amountCents": 100000,
+    "account": "GCASH_WALLET"
+   },
+   "lines": [
+    {
+     "account": "GCASH_WALLET",
+     "customer": null,
+     "amountCents": -100000
+    },
+    {
+     "account": "OWNER_EQUITY",
+     "customer": null,
+     "amountCents": 100000
+    }
+   ],
+   "profitCents": 0,
+   "rpc": {
+    "fn": "post_float_adjustment",
+    "args": {
+     "p_kind": "capital_withdrawal",
+     "p_amount_cents": 100000,
+     "p_account": "GCASH_WALLET"
+    }
+   }
+  },
+  {
+   "name": "owner forgives 10.00 of a debt (discount or write-off)",
+   "input": {
+    "type": "debt_adjustment",
+    "customerId": "C1",
+    "amountCents": -1000
+   },
+   "lines": [
+    {
+     "account": "CUSTOMER_RECEIVABLES",
+     "customer": "C1",
+     "amountCents": -1000
+    },
+    {
+     "account": "DEBT_ADJUSTMENTS",
+     "customer": null,
+     "amountCents": 1000
+    }
+   ],
+   "profitCents": -1000,
+   "rpc": null
+  },
+  {
+   "name": "owner corrects a debt upward by 5.00",
+   "input": {
+    "type": "debt_adjustment",
+    "customerId": "C1",
+    "amountCents": 500
+   },
+   "lines": [
+    {
+     "account": "CUSTOMER_RECEIVABLES",
+     "customer": "C1",
+     "amountCents": 500
+    },
+    {
+     "account": "DEBT_ADJUSTMENTS",
+     "customer": null,
+     "amountCents": -500
+    }
+   ],
+   "profitCents": 500,
+   "rpc": null
+  }
+ ]
+}

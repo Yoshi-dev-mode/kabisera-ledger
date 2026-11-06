@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens: Taste Skill "achromatic-ledger" (see docs/design/DIRECTION.md).
+ * Chrome has no colour. The one hue (--chart-3) goes on the main data element only.
+ * The ground is the blue-grey "ledger" face; cards stay white. No shadows at rest.
+ */
+:root {
+  --ground: #f2f4f7;
+  --surface: #ffffff;
+  --raised: #eeeeee;
+  --border: #e6e6e6;
+  --rule: #f0f0f0;
+  --control: #d4d4d4;
+  /* Form-control outline: 3:1 against white so a field is visible to low-vision users (WCAG 1.4.11).
+     Deliberately darker than the design sheet's light control border; see docs/design/ACCESSIBILITY.md. */
+  --control-border: #8c8c8c;
+  --text: #0a0a0a;
+  --muted: #6b6b6b;
+  --primary: #141414;
+  --primary-ink: #ffffff;
+  --secondary: #e5e5e5;
+  --positive: #2e7d32;
+  --negative: #c4242a;
+  --warning: #92400e;
+  --chart-1: #141414;
+  --chart-2: #8a8a8a;
+  --chart-3: #1d5fbf;
+  --pill-positive-bg: #dcfae5;
+  --pill-positive-ink: #04250e;
+  --pill-negative-bg: #ffedea;
+  --pill-negative-ink: #831c1e;
+  --pill-warning-bg: #fffbeb;
+  --pill-warning-ink: #92400e;
+  --pill-neutral-bg: #eeeeee;
+  --pill-neutral-ink: #3d3d3d;
+  --sidebar-width: 256px;
+  --gap: 12px;
+  --pad: 24px;
+  --row-height: 44px;
+  --control-height: 36px;
+}
+
+@theme inline {
+  /* Names Tailwind and shadcn/ui expect, mapped onto the tokens above. */
+  --color-background: var(--ground);
+  --color-foreground: var(--text);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--text);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--text);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-ink);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--text);
+  --color-muted: var(--raised);
+  --color-muted-foreground: var(--muted);
+  --color-accent: var(--raised);
+  --color-accent-foreground: var(--text);
+  --color-destructive: var(--negative);
+  --color-border: var(--border);
+  --color-input: var(--control-border);
+  --color-ring: var(--text);
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-rule: var(--rule);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warning: var(--warning);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --radius-chip: 4px;
+
+  --font-sans: var(--font-geist-sans), Inter, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    background: var(--ground);
+    color: var(--text);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+  }
+  /* Every figure that updates or sits in a column uses tabular digits. */
+  table,
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  td.num,
+  th.num {
+    text-align: right;
+  }
+  :focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--text);
+    color: var(--surface);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print: hide the shell and controls so a statement prints as a clean page. */
+@media print {
+  aside,
+  nav,
+  [data-noprint] {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+}

@@ -1,0 +1,35 @@
+# dependencies and build output
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# environment files: never commit real keys
+.env
+.env.local
+.env.*.local
+
+# test output
+test-results/
+playwright-report/
+
+# Supabase CLI local state
+supabase/.branches/
+supabase/.temp/
+
+# Taste Skill screenshots (direction.json is kept)
+.taste-skill/inspect/
+.taste-skill/before/
+.taste-skill/after/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+
+# database backups can contain customer data
+*.dump
+backups/

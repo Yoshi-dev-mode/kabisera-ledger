@@ -1,0 +1,4 @@
+-- Intentionally empty.
+-- `supabase db reset` runs this file after the migrations. Kabisera Ledger loads NO data
+-- automatically: opening balances and the opening debts are entered or imported deliberately
+-- (opening debts in Phase 5; see supabase/seed/README.md).

@@ -1,0 +1,23 @@
+{
+  "batch": {
+    "kind": "opening_debts",
+    "source": "Reported by the owner. Not derived from transaction records.",
+    "reported_on": null,
+    "date_known": false,
+    "currency": "PHP",
+    "expected_total_cents": 1134900
+  },
+  "debts": [
+    { "seed_key": "opening-debt:jhanrey", "display_name": "Jhanrey", "amount_cents": 30500 },
+    { "seed_key": "opening-debt:ralfh", "display_name": "Ralfh", "amount_cents": 202400 },
+    { "seed_key": "opening-debt:thy", "display_name": "Thy", "amount_cents": 21000 },
+    { "seed_key": "opening-debt:ken", "display_name": "Ken", "amount_cents": 204500 },
+    { "seed_key": "opening-debt:denver", "display_name": "Denver", "amount_cents": 20500 },
+    { "seed_key": "opening-debt:cee-jay", "display_name": "Cee jay", "amount_cents": 100000 },
+    { "seed_key": "opening-debt:von", "display_name": "Von", "amount_cents": 239000 },
+    { "seed_key": "opening-debt:gab", "display_name": "Gab", "amount_cents": 200000 },
+    { "seed_key": "opening-debt:cj", "display_name": "Cj", "amount_cents": 88500 },
+    { "seed_key": "opening-debt:alexis", "display_name": "Alexis", "amount_cents": 6500 },
+    { "seed_key": "opening-debt:isid", "display_name": "Isid", "amount_cents": 22000 }
+  ]
+}
