@@ -39,7 +39,7 @@ function Field({ id, label, children, help }: { id: string; label: string; child
 function Radio({ name, value, label, checked, onChange }: { name: string; value: string; label: string; checked: boolean; onChange: () => void }) {
   return (
     <label className="flex items-center gap-2 text-[14px]">
-      <input type="radio" name={name} value={value} checked={checked} onChange={onChange} className="size-4 accent-[var(--primary)]" />
+      <input type="radio" name={name} value={value} checked={checked} onChange={onChange} className="size-4 accent-primary" />
       {label}
     </label>
   );
@@ -104,7 +104,7 @@ function OwnerOverride() {
   return (
     <details className="text-[14px]">
       <summary className="cursor-pointer text-[13px] text-muted-foreground">Owner override (only if a balance would go below zero)</summary>
-      <div className="mt-2 flex max-w-[480px] flex-col gap-1.5">
+      <div className="mt-2 flex max-w-120 flex-col gap-1.5">
         <label htmlFor="override" className="text-[13px] font-medium">Reason</label>
         <Input id="override" name="override" maxLength={300} autoComplete="off" />
         <p className="text-[12px] text-muted-foreground">Normally a balance cannot go below zero. The owner can allow it with a reason, which is kept in the audit log.</p>
@@ -149,9 +149,17 @@ export function ServiceEntryForm({ type, action, idempotencyKey, customers, rule
   const isIn = type === "cash_in";
 
   return (
-    <form action={formAction} className="flex max-w-[560px] flex-col gap-4" noValidate onChange={(e) => {
-      const t = e.target as HTMLInputElement | HTMLSelectElement;
-      if (t.name === "customerId") setCustomerId(t.value);
+    <form action={formAction} className="flex max-w-140 flex-col gap-4" noValidate onChange={(e) => {
+      const target = e.target;
+
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLSelectElement
+      ) {
+        if (target.name === "customerId") {
+          setCustomerId(target.value);
+        }
+      }
     }}>
       <input type="hidden" name="key" value={idempotencyKey} />
       <input type="hidden" name="type" value={type} />
@@ -229,9 +237,17 @@ export function LoadEntryForm({ action, idempotencyKey, customers, products, set
   const preview = previewLoad({ face, cost, price, source, payment, unpaid, customerId });
 
   return (
-    <form action={formAction} className="flex max-w-[560px] flex-col gap-4" noValidate onChange={(e) => {
-      const t = e.target as HTMLInputElement | HTMLSelectElement;
-      if (t.name === "customerId") setCustomerId(t.value);
+    <form action={formAction} className="flex max-w-140 flex-col gap-4" noValidate onChange={(e) => {
+      const target = e.target;
+
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLSelectElement
+      ) {
+        if (target.name === "customerId") {
+          setCustomerId(target.value);
+        }
+      }
     }}>
       <input type="hidden" name="key" value={idempotencyKey} />
       <CustomerPicker customers={customers} required={false} />
@@ -281,7 +297,7 @@ export function ExpenseEntryForm({ action, idempotencyKey, categories }: { actio
   const [method, setMethod] = useState<"cash" | "gcash">("cash");
   const preview = previewExpense({ amount, method });
   return (
-    <form action={formAction} className="flex max-w-[560px] flex-col gap-4" noValidate>
+    <form action={formAction} className="flex max-w-140 flex-col gap-4" noValidate>
       <input type="hidden" name="key" value={idempotencyKey} />
       <Field id="categoryId" label="Category (optional)" help={categories.length === 0 ? "Add categories in Settings." : undefined}>
         <select id="categoryId" name="categoryId" defaultValue="" className="h-9 rounded-control border border-input bg-surface px-2 text-[14px]">
@@ -322,11 +338,11 @@ export function AdjustmentEntryForm({ action, idempotencyKey }: { action: Action
   const needsAccount = kind === "load_topup" || kind === "capital_contribution" || kind === "capital_withdrawal";
   const accountOptions: [FloatName, string][] =
     kind === "load_topup" ? [["CASH_DRAWER", "Cash drawer"], ["GCASH_WALLET", "GCash wallet"]]
-    : [["CASH_DRAWER", "Cash drawer"], ["GCASH_WALLET", "GCash wallet"], ["LOAD_BALANCE", "Load balance"]];
+      : [["CASH_DRAWER", "Cash drawer"], ["GCASH_WALLET", "GCash wallet"], ["LOAD_BALANCE", "Load balance"]];
   const effective = accountOptions.some(([v]) => v === account) ? account : accountOptions[0]![0];
   const preview = previewAdjustment({ kind, amount, account: effective });
   return (
-    <form action={formAction} className="flex max-w-[560px] flex-col gap-4" noValidate>
+    <form action={formAction} className="flex max-w-140 flex-col gap-4" noValidate>
       <input type="hidden" name="key" value={idempotencyKey} />
       <Field id="kind" label="What happened">
         <select id="kind" name="kind" value={kind} onChange={(e) => setKind(e.target.value as AdjustmentKind)} className="h-9 rounded-control border border-input bg-surface px-2 text-[14px]">
@@ -357,7 +373,7 @@ export function OpeningBalancesForm({ action, idempotencyKey }: { action: Action
   const [load, setLoad] = useState("");
   const preview = previewOpening({ cash, gcash, load });
   return (
-    <form action={formAction} className="flex max-w-[560px] flex-col gap-4" noValidate>
+    <form action={formAction} className="flex max-w-140 flex-col gap-4" noValidate>
       <input type="hidden" name="key" value={idempotencyKey} />
       <p className="max-w-[60ch] text-[14px] text-muted-foreground">
         Count what you really have right now and enter it. Nothing is assumed: your reported starting capital is not used as a balance. This can be entered once; if you get it wrong, the owner can void it and enter it again.
