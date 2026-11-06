@@ -1,5 +1,6 @@
+<h1 align="center">Kabisera Ledger</h1>
+
 <p align="center">
-  <h1>Kabisera Ledger</h1>
   <strong>A practical financial ledger for small GCash and mobile-load businesses.</strong>
   <br />
   Track transactions, customer debts, balances, service fees, and daily performance in one place.
