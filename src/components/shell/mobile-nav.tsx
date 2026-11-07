@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { Ellipsis, X } from "lucide-react";
+import { Ellipsis, LogOut, X } from "lucide-react";
 import { signOutAction } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
 import type { NavItem } from "@/lib/nav";
@@ -104,6 +104,7 @@ export function MobileNav({ bar, more, displayName, roleLabel }: Props) {
           </div>
           <form action={signOutAction}>
             <Button type="submit" variant="outline" size="sm">
+              <LogOut aria-hidden="true" />
               Sign out
             </Button>
           </form>

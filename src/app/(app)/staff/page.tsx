@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHeading } from "@/components/shell/page-heading";
 import { parseProfileRow, type Profile } from "@/lib/auth/permissions";
 import { requireOwner } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -49,7 +50,7 @@ export default async function StaffPage() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-[24px] leading-8 font-medium">Staff Management</h1>
+        <PageHeading icon="staff">Staff Management</PageHeading>
         <p className="max-w-[60ch] text-[14px] text-muted-foreground">
           Only you, as owner, can add staff and decide what each person may do. Every change is recorded in the audit log.
         </p>

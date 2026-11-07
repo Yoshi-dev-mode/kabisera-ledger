@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHeading } from "@/components/shell/page-heading";
 import Link from "next/link";
 import { NewDebtForm } from "@/components/ledger/debt-forms";
 import { requirePermission } from "@/lib/auth/session";
@@ -16,7 +17,7 @@ export default async function NewDebtPage({ searchParams }: { searchParams: Prom
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-[24px] leading-8 font-medium">New cash advance</h1>
+        <PageHeading icon="debt">New cash advance</PageHeading>
         <p className="max-w-[60ch] text-[14px] text-muted-foreground">Money you hand over that the customer will pay back. It leaves your drawer or wallet and becomes a debt.</p>
         <Link href="/debts" className="text-[13px] underline underline-offset-4">Back to debts</Link>
       </header>

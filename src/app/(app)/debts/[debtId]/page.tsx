@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHeading } from "@/components/shell/page-heading";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdjustDebtForm, DueDateForm } from "@/components/ledger/debt-forms";
@@ -25,7 +26,7 @@ export default async function DebtPage({ params }: { params: Promise<{ debtId: s
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-[24px] leading-8 font-medium">{d.customerName}: {d.reference ?? "Cash advance"}</h1>
+          <PageHeading icon="debt">{d.customerName}: {d.reference ?? "Cash advance"}</PageHeading>
           <Pill tone={d.status === "paid" ? "positive" : d.status === "voided" ? "negative" : d.status === "partially_paid" ? "warning" : "neutral"}>{DEBT_STATUS_LABELS[d.status]}</Pill>
           {d.isOverdue ? <Pill tone="negative">Overdue</Pill> : null}
         </div>

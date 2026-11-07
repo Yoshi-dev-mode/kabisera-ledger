@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Money } from "@/components/ledger/money";
+import { PageHeading } from "@/components/shell/page-heading";
 import { ProfitChart } from "@/components/ledger/profit-chart";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +40,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-2">
-        <h1 className="text-[24px] leading-8 font-medium">Reports</h1>
+        <PageHeading icon="chart">Reports</PageHeading>
         <form method="get" className="flex flex-wrap items-end gap-3">
           <div className="flex flex-col gap-1.5"><label htmlFor="from" className="text-[12px] text-muted-foreground">From</label><Input id="from" name="from" type="date" defaultValue={from} /></div>
           <div className="flex flex-col gap-1.5"><label htmlFor="to" className="text-[12px] text-muted-foreground">To</label><Input id="to" name="to" type="date" defaultValue={to} /></div>

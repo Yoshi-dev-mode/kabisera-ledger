@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHeading } from "@/components/shell/page-heading";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FilterBar } from "@/components/ledger/filter-bar";
@@ -60,7 +61,7 @@ export default async function CustomerProfilePage({
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-[24px] leading-8 font-medium">{customer.displayName}</h1>
+          <PageHeading icon="users">{customer.displayName}</PageHeading>
           {customer.status === "archived" ? <Pill>Archived</Pill> : <Pill tone="positive">Active</Pill>}
         </div>
         <p className="text-[14px] text-muted-foreground">

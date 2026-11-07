@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ClosingForm } from "@/components/ledger/closing-form";
+import { PageHeading } from "@/components/shell/page-heading";
 import { Money } from "@/components/ledger/money";
 import { Pagination } from "@/components/ledger/pagination";
 import { ReasonForm } from "@/components/ledger/reason-form";
@@ -35,7 +36,7 @@ export default async function ClosingPage({ searchParams }: { searchParams: Prom
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-2">
-        <h1 className="text-[24px] leading-8 font-medium">Daily closing</h1>
+        <PageHeading icon="check">Daily closing</PageHeading>
         <p className="max-w-[65ch] text-[14px] text-muted-foreground">
           Count the cash in the drawer, the GCash wallet and the load balance, and compare them with what the records say you should have. A difference is never hidden: it is recorded with your reason.
         </p>

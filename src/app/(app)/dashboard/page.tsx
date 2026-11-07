@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Money } from "@/components/ledger/money";
 import { ProfitChart } from "@/components/ledger/profit-chart";
 import { TransactionTable } from "@/components/ledger/transaction-table";
+import { PageHeading } from "@/components/shell/page-heading";
 import { buttonVariants } from "@/components/ui/button";
 import { Pill } from "@/components/ui/pill";
 import { can, canAny, isOwner } from "@/lib/auth/permissions";
@@ -54,7 +55,7 @@ export default async function DashboardPage() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h1 className="text-[24px] leading-8 font-medium">Dashboard</h1>
+          <PageHeading icon="dashboard">Dashboard</PageHeading>
           <p className="text-[14px] text-muted-foreground">{formatManilaDate(new Date())} · Philippine time</p>
         </div>
         {canRecord ? <Link href="/transactions/new" className={buttonVariants({})}>New transaction</Link> : null}

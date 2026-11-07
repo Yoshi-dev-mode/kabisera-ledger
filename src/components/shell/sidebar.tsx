@@ -1,4 +1,5 @@
 import { signOutAction } from "@/app/auth/actions";
+import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Profile } from "@/lib/auth/permissions";
 import type { NavItem } from "@/lib/nav";
@@ -22,6 +23,7 @@ export function Sidebar({ items, profile }: { items: readonly NavItem[]; profile
         </div>
         <form action={signOutAction}>
           <Button type="submit" variant="ghost" size="sm">
+            <LogOut aria-hidden="true" />
             Sign out
           </Button>
         </form>

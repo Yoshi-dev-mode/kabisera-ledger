@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Money } from "@/components/ledger/money";
+import { PageHeading } from "@/components/shell/page-heading";
 import { Pill } from "@/components/ui/pill";
 import { CategoryForm, FeeRuleForm, LoadProductForm, RulesForm, ThresholdsForm } from "@/components/settings/settings-forms";
 import { requireOwner } from "@/lib/auth/session";
@@ -31,7 +32,7 @@ export default async function SettingsPage() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-[24px] leading-8 font-medium">Settings</h1>
+        <PageHeading icon="settings">Settings</PageHeading>
         <p className="max-w-[65ch] text-[14px] text-muted-foreground">
           Changes apply to new transactions only. Every transaction keeps the fee and fee mode it was recorded with, so changing a rule never rewrites history.
         </p>

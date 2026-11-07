@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Money } from "@/components/ledger/money";
+import { PageHeading } from "@/components/shell/page-heading";
 import { Pagination } from "@/components/ledger/pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +40,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-[24px] leading-8 font-medium">Cash and GCash balances</h1>
+        <PageHeading icon="wallet">Cash and GCash balances</PageHeading>
         <p className="max-w-[65ch] text-[14px] text-muted-foreground">
           These are the balances you SHOULD have, worked out from every movement you recorded. They are kept apart on purpose, and money customers owe you is never counted here. Compare them with what you really count when you close the day.
         </p>

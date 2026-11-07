@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHeading } from "@/components/shell/page-heading";
 import { FilterBar } from "@/components/ledger/filter-bar";
 import { Pagination } from "@/components/ledger/pagination";
 import { TransactionTable } from "@/components/ledger/transaction-table";
@@ -20,7 +21,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h1 className="text-[24px] leading-8 font-medium">Transactions</h1>
+          <PageHeading icon="list">Transactions</PageHeading>
           {!wide ? <p className="text-[13px] text-muted-foreground">You see the transactions you recorded.</p> : null}
         </div>
         {wide ? <a href={`/transactions/export${toQueryString(filters, { page: 1 })}`} className={buttonVariants({ variant: "outline", size: "sm" })}>Export (CSV)</a> : null}

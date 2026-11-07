@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHeading } from "@/components/shell/page-heading";
 import Link from "next/link";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -24,7 +25,7 @@ export default async function ImportDebtsPage() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-[24px] leading-8 font-medium">Opening debts</h1>
+        <PageHeading icon="debt">Opening debts</PageHeading>
         <p className="max-w-[65ch] text-[14px] text-muted-foreground">
           The debts you reported before using this app. They are recorded as opening balances: no date, fee, reference or
           staff member is invented, and collecting them later is never counted as income. Importing is safe to repeat; the same list is never added twice.

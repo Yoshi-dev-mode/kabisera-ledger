@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHeading } from "@/components/shell/page-heading";
 import Link from "next/link";
 import { Money } from "@/components/ledger/money";
 import { Pagination } from "@/components/ledger/pagination";
@@ -54,7 +55,7 @@ export default async function DebtsPage({ searchParams }: { searchParams: Promis
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[24px] leading-8 font-medium">Debts</h1>
+        <PageHeading icon="debt">Debts</PageHeading>
         <div className="flex flex-wrap gap-2">
           {can(profile, "repayments.record") ? <Link href="/debts/repayment" className={buttonVariants({})}>Record repayment</Link> : null}
           {can(profile, "transactions.record") ? <Link href="/debts/new" className={buttonVariants({ variant: "outline" })}>New cash advance</Link> : null}

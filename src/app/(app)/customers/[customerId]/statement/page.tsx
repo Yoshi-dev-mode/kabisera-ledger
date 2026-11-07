@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHeading } from "@/components/shell/page-heading";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Money } from "@/components/ledger/money";
@@ -44,7 +45,7 @@ export default async function StatementPage({
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-3">
-        <h1 className="text-[24px] leading-8 font-medium">Statement: {customer.displayName}</h1>
+        <PageHeading icon="list">Statement: {customer.displayName}</PageHeading>
         <p className="text-[14px] text-muted-foreground">
           {formatManilaDate(new Date(`${from}T00:00:00+08:00`))} to {formatManilaDate(new Date(`${to}T00:00:00+08:00`))}
           {customer.contactNumber ? <> · <span className="num">{customer.contactNumber}</span></> : null}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHeading } from "@/components/shell/page-heading";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Money } from "@/components/ledger/money";
@@ -39,7 +40,7 @@ export default async function TransactionPage({ params }: { params: Promise<{ id
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-[24px] leading-8 font-medium">{TYPE_LABELS[t.type]}</h1>
+          <PageHeading icon="list">{TYPE_LABELS[t.type]}</PageHeading>
           {t.status === "voided" ? <Pill tone="negative">Voided</Pill> : t.voidRequestedAt ? <Pill tone="warning">Void requested</Pill> : <Pill tone="positive">Posted</Pill>}
         </div>
         <p className="text-[14px] text-muted-foreground"><span className="num">{t.publicRef}</span> · <span className="num">{formatManilaDateTime(new Date(t.occurredAt))}</span> Philippine time</p>

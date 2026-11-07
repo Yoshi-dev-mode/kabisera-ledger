@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHeading } from "@/components/shell/page-heading";
 import {
   AdjustmentEntryForm, ExpenseEntryForm, LoadEntryForm, OpeningBalancesForm, ServiceEntryForm,
 } from "@/components/entry/entry-forms";
@@ -47,7 +48,7 @@ export default async function NewTransactionPage({ searchParams }: { searchParam
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-3">
-        <h1 className="text-[24px] leading-8 font-medium">New transaction</h1>
+        <PageHeading icon="plus">New transaction</PageHeading>
         <nav aria-label="Transaction type" className="flex flex-wrap gap-2">
           {tabs.map((t) => (
             <Link

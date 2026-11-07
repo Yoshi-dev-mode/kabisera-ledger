@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Money } from "@/components/ledger/money";
+import { PageHeading } from "@/components/shell/page-heading";
 import { Pagination } from "@/components/ledger/pagination";
 import { Pill } from "@/components/ui/pill";
 import { buttonVariants } from "@/components/ui/button";
@@ -24,7 +25,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[24px] leading-8 font-medium">Customers</h1>
+        <PageHeading icon="users">Customers</PageHeading>
         {canManage ? (
           <Link href="/customers/new" className={buttonVariants({ size: "default" })}>Add customer</Link>
         ) : null}

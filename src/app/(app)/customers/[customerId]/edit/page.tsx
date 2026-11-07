@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHeading } from "@/components/shell/page-heading";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requirePermission } from "@/lib/auth/session";
@@ -17,7 +18,7 @@ export default async function EditCustomerPage({ params }: { params: Promise<{ c
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-[24px] leading-8 font-medium">Edit {customer.displayName}</h1>
+        <PageHeading icon="users">Edit {customer.displayName}</PageHeading>
         <Link href={`/customers/${customer.id}`} className="text-[13px] underline underline-offset-4">Back to the profile</Link>
       </header>
       <section className="rounded-card bg-surface p-5">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHeading } from "@/components/shell/page-heading";
 import Link from "next/link";
 import { RepaymentForm } from "@/components/ledger/debt-forms";
 import { requirePermission } from "@/lib/auth/session";
@@ -20,7 +21,7 @@ export default async function RepaymentPage({ searchParams }: { searchParams: Pr
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-[24px] leading-8 font-medium">Record repayment</h1>
+        <PageHeading icon="debt">Record repayment</PageHeading>
         <Link href="/debts" className="text-[13px] underline underline-offset-4">Back to debts</Link>
       </header>
       <section className="rounded-card bg-surface p-5">
