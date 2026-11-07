@@ -47,7 +47,7 @@ export function NavLinks({ items }: { items: readonly NavItem[] }) {
                     <Link
                       href={item.href}
                       aria-current={active ? "page" : undefined}
-                      className={cn(rowClass, active ? "bg-[#ececec] font-medium" : "hover:bg-[#f0f0f0]")}
+                      className={cn(rowClass, "transition-colors", active ? "bg-secondary font-medium text-primary" : "hover:bg-muted")}
                     >
                       <NavIconView name={item.icon} className="size-4 shrink-0" />
                       <span className="truncate">{item.label}</span>

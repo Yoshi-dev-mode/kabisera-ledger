@@ -48,7 +48,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
       <nav aria-label="Account" className="grid gap-3 md:grid-cols-3">
         {accounts.map((a) => (
           <Link key={a.code} href={`/accounts?account=${a.code}`} aria-current={a.code === code ? "page" : undefined}
-            className={cn("rounded-card bg-surface p-4", a.code === code ? "outline outline-2 outline-foreground" : "hover:bg-[#fafafa]")}>
+            className={cn("rounded-card bg-surface p-4 transition-colors", a.code === code ? "outline outline-2 outline-primary" : "hover:bg-muted")}>
             <span className="flex items-center justify-between gap-2 text-[13px] text-muted-foreground">{a.name}{a.isLow ? <Pill tone="negative">Low</Pill> : null}</span>
             <span className={cn("num mt-1 block text-[20px] leading-6 font-medium", a.balanceCents < 0 && "text-negative")}><Money cents={a.balanceCents} /></span>
             <span className="mt-1 block text-[12px] text-muted-foreground">{a.lastReconciledOn ? `Counted ${a.lastReconciledOn}` : "Never counted"}</span>

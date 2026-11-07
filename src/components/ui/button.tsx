@@ -4,11 +4,11 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /*
- * Flat buttons per the Taste Skill app rules: near-black primary, grey secondary,
- * 1px outline, text ghost. One control height, no shadows, no gradients, accent never on chrome.
+ * Flat, compact controls use the ledger's jade primary, pale mint secondary,
+ * 1px outline and text ghost variants.
  */
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-control text-[14px] font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-control text-[14px] font-medium transition-[background-color,color,transform] hover:-translate-y-px active:translate-y-0 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {

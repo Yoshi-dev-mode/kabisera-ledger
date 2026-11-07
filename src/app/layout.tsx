@@ -19,7 +19,8 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en-PH" className={geistSans.variable}>
-      <body>{children}</body>
+      {/* Browser extensions such as Grammarly add data attributes before React hydrates. */}
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

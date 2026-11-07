@@ -1,5 +1,6 @@
 import { MobileNav } from "@/components/shell/mobile-nav";
 import { Sidebar } from "@/components/shell/sidebar";
+import { TourGuide } from "@/components/shell/tour-guide";
 import { requireSession } from "@/lib/auth/session";
 import { splitForMobile, visibleNavItems } from "@/lib/nav";
 
@@ -22,7 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </a>
       <Sidebar items={items} profile={profile} />
       <main id="main" className="min-w-0 flex-1 px-4 pt-6 pb-24 lg:px-10 lg:pt-9 lg:pb-10">
-        <div className="mx-auto w-full max-w-[1200px]">{children}</div>
+        <div className="mx-auto w-full max-w-300">{children}</div>
       </main>
       <MobileNav
         bar={bar}
@@ -30,6 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         displayName={profile.displayName}
         roleLabel={profile.role === "owner" ? "Owner" : "Staff"}
       />
+      <TourGuide />
     </div>
   );
 }

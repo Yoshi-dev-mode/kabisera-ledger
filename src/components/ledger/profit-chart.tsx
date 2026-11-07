@@ -25,7 +25,7 @@ export function ProfitChart({ points }: { points: ChartPoint[] }) {
               labelStyle={{ color: "#0a0a0a" }}
               formatter={(value) => [formatPesos(Math.round(Number(value)), { signed: true }), "Net profit"]}
             />
-            <Bar dataKey="profitCents" fill="#1d5fbf" radius={0} maxBarSize={28} isAnimationActive={false} />
+            <Bar dataKey="profitCents" fill="var(--chart-3)" radius={0} maxBarSize={28} isAnimationActive={false} />
           </BarChart>
         </ResponsiveContainer>
       </div>

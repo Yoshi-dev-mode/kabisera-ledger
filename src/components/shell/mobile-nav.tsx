@@ -37,6 +37,7 @@ export function MobileNav({ bar, more, displayName, roleLabel }: Props) {
     <>
       <nav
         aria-label="Main"
+        data-tour="main-nav"
         className="fixed inset-x-0 bottom-0 z-20 flex border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
       >
         {bar.map((item) =>

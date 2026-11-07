@@ -19,9 +19,12 @@ export type CustomerOption = { id: string; name: string };
 
 function Message({ state }: { state: ActionState }) {
   if (!state.message) return null;
+  const message = state.status === "error" && (/^transaction invalid\.?$/i.test(state.message.trim()) || /^enter (the |a )?.*amount\.$/i.test(state.message.trim()))
+    ? "Please put some amount first."
+    : state.message;
   return (
     <p role={state.status === "error" ? "alert" : "status"} className={state.status === "error" ? "text-[13px] text-negative" : "text-[13px] text-positive"}>
-      {state.message}
+      {message}
     </p>
   );
 }
@@ -56,7 +59,7 @@ export function PreviewBox({ preview }: { preview: Preview }) {
     if (e.owed) rows.push(["Owed to you by customers", e.owed, true]);
   }
   return (
-    <section aria-label="What will happen" aria-live="polite" className="rounded-control bg-[#f6f7f9] p-4">
+    <section aria-label="What will happen" aria-live="polite" className="rounded-control border border-border bg-secondary/50 p-4">
       <h3 className="text-[13px] font-medium">What will happen</h3>
       {preview.ok ? (
         <>

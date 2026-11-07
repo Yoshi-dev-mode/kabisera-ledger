@@ -70,7 +70,7 @@ export type ServiceFields = {
 
 export function previewService(f: ServiceFields): Preview {
   const principal = requiredCents(f.amount);
-  if (principal === null) return { ok: false, message: "Enter the amount to see what will happen." };
+  if (principal === null) return { ok: false, message: blank(f.amount) ? "Please put some amount first." : "Enter a valid amount to see what will happen." };
   const fee = optionalCents(f.fee);
   const unpaid = optionalCents(f.unpaid);
   const cost = optionalCents(f.providerCost);

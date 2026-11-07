@@ -12,7 +12,7 @@ export function Sidebar({ items, profile }: { items: readonly NavItem[]; profile
         <p className="text-[14px] leading-5 font-medium">Kabisera Ledger</p>
         <p className="text-[12px] text-muted-foreground">Cash, GCash and load ledger</p>
       </div>
-      <nav aria-label="Main" className="flex-1 overflow-y-auto">
+      <nav aria-label="Main" data-tour="main-nav" className="flex-1 overflow-y-auto">
         <NavLinks items={items} />
       </nav>
       <div className="mt-4 flex items-center justify-between gap-2 border-t border-border px-3 pt-4">
