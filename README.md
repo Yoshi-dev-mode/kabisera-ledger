@@ -1,188 +1,145 @@
-<h1 align="center">Kabisera Ledger</h1>
+<div align="center">
 
-<p align="center">
-  <strong>A practical financial ledger for small GCash and mobile-load businesses.</strong>
-  <br />
-  Track transactions, customer debts, balances, service fees, and daily performance in one place.
-</p>
+# Kabisera Ledger
 
-<p align="center">
-  <img alt="Next.js" src="https://img.shields.io/badge/Next.js-15-black?logo=next.js" />
-  <img alt="React" src="https://img.shields.io/badge/React-19-149eca?logo=react" />
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript" />
-  <img alt="Supabase" src="https://img.shields.io/badge/Supabase-PostgreSQL-3ecf8e?logo=supabase" />
-  <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-4-06b6d4?logo=tailwindcss" />
-  <img alt="Status" src="https://img.shields.io/badge/status-in%20development-orange" />
-</p>
+### A clearer way to run the counter.
+
+Record cash-in, cash-out, mobile load, customer credit and daily balances in one ledger built for small service businesses.
+
+<br />
+
+![Next.js 15](https://img.shields.io/badge/Next.js-15-111111?logo=next.js)
+![React 19](https://img.shields.io/badge/React-19-149eca?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript)
+![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ecf8e?logo=supabase)
+![Status](https://img.shields.io/badge/status-prototype%20in%20progress-d99b29)
+
+<br />
+
+[Product overview](#the-product) · [Capabilities](#what-it-can-do) · [Ledger principles](#designed-for-financial-clarity) · [Run locally](#run-it-locally) · [Project status](#readiness-and-next-steps)
+
+</div>
 
 ---
 
-## Overview
+## The product
 
-**Kabisera Ledger** is a full-stack recordkeeping and debt management application built for small businesses that provide GCash cash-in, cash-out, and mobile-load services.
+Small GCash and mobile-load counters handle several kinds of money at once: cash in the drawer, funds in a GCash wallet, load inventory, service fees and amounts customers still owe. Kabisera Ledger brings those records into one place and keeps the important figures distinct.
 
-It gives business owners a centralized place to record customer transactions, monitor outstanding balances, manage cash and digital-wallet funds, configure service fees, and review daily financial activity. The goal is to make everyday bookkeeping clearer, more consistent, and easier to audit.
+The goal is a practical daily workflow: record a transaction, see its effect before saving, track what customers owe, and compare expected balances with the real count at closing.
 
-> Kabisera Ledger is an independent recordkeeping tool. It is **not an official GCash product**, is not affiliated with GCash, and does not connect to GCash. Transactions and balances are entered and maintained manually.
+> **Independent recordkeeping software.** Kabisera Ledger is not made by, affiliated with or connected to GCash. Transactions are entered manually; the app does not move, process or verify money through GCash.
 
-## Features
+## What it can do
 
-| Module | Capabilities |
+| Area | What’s included |
 | --- | --- |
-| **Dashboard** | At-a-glance business activity, balances, earnings, and alerts |
-| **Transaction ledger** | Record cash-in, cash-out, mobile load, advances, repayments, expenses, transfers, and capital contributions |
-| **Customer management** | Search customers, view transaction history, manage customer records, and export statements |
-| **Debt tracking** | Monitor outstanding receivables, due dates, partial repayments, write-offs, and opening debts |
-| **Balance monitoring** | Track cash, GCash, and load balances separately, with running balances and low-balance alerts |
-| **Daily closing** | Reconcile counted balances, record differences with reasons, and review closing history |
-| **Reports and exports** | Review financial activity over time and export records to CSV |
-| **Settings and access control** | Configure fee rules, products, categories, thresholds, staff accounts, and permissions |
+| **Daily transactions** | Cash-in, cash-out, mobile-load sales, expenses, cash advances, repayments, transfers and capital movements |
+| **Customer records** | Customer profiles, transaction history, outstanding debt, statements and CSV exports |
+| **Separate balances** | Cash drawer, GCash wallet and load balance, each with its own ledger and optional low-balance threshold |
+| **Daily closing** | Enter real counts, compare them with expected balances, explain differences and keep a closing history |
+| **Business reports** | Review transaction volume, fees, load margin, costs and net profit over a selected period |
+| **Owner and staff access** | Give staff only the permissions needed for their work; keep owner-only actions separate |
+| **Review before posting** | Transaction forms preview the expected balance and profit effects before an entry is saved |
 
-## Accounting principles
+## Designed for financial clarity
 
-The application is designed around a few important bookkeeping rules:
+Kabisera Ledger is built around a few distinctions that are easy to lose in a simple cashbook:
 
-- **Customer debt is not cash.** Unpaid amounts are tracked separately from available balances.
-- **Transaction principal is not profit.** Earnings come from service fees and load margins, less costs and expenses.
-- **Repayments are not new income.** They reduce the customer's outstanding debt.
-- **Balances are derived from ledger entries.** They are not arbitrary values that can be overwritten.
-- **Posted transactions are preserved.** Corrections use reasoned reversals instead of silently editing or deleting financial history.
-- **Daily closing is a reconciliation.** Differences are recorded explicitly rather than hidden by changing a balance.
+- **Customer debt is not available cash.** An unpaid amount is tracked as a receivable, separately from the drawer and wallet.
+- **Transaction volume is not profit.** The principal amount is money that moved; earnings come from fees and load margin, less costs.
+- **Repayment is not new income.** It reduces the amount a customer owes.
+- **Balances come from recorded movements.** They are calculated from ledger entries rather than manually overwritten.
+- **Corrections preserve history.** Posted records are designed to be corrected with a reasoned reversal, keeping the original entry visible.
+- **Counts are reconciled explicitly.** A difference between expected and counted money is recorded with a reason instead of being hidden.
 
-Money is represented in integer centavos, and business dates use the Philippine time zone (`Asia/Manila`). For the detailed accounting model, see [Architecture and Accounting Rules](docs/ARCHITECTURE.md).
+The app stores money in integer centavos and uses the Philippine business date (`Asia/Manila`). See [Architecture and Accounting Rules](docs/ARCHITECTURE.md) for the detailed model.
 
-## Technology stack
+## A simple operating loop
 
-| Layer | Technologies |
+```text
+Record a transaction  →  Review its effect  →  Keep customer debt separate
+          ↓                                                ↓
+     Close the day  ←  Compare expected balances with the real count
+```
+
+## Technical foundation
+
+| Layer | Implementation |
 | --- | --- |
-| Framework | Next.js 15, React 19 |
-| Language | TypeScript |
-| Styling | Tailwind CSS 4 |
-| Backend and database | Supabase, PostgreSQL |
-| Authentication | Supabase Auth, `@supabase/ssr` |
-| Forms and validation | React Hook Form, Zod |
-| Charts | Recharts |
-| Testing | Vitest, Playwright |
-| Runtime | Node.js 20.9+ |
+| Web app | Next.js 15, React 19, TypeScript |
+| Interface | Tailwind CSS 4, responsive navigation, Recharts |
+| Data and authentication | Supabase, PostgreSQL, Supabase Auth |
+| Input handling | Server actions, Zod, strict peso-to-centavo parsing |
+| Access controls | Server-side permission checks and database row-level security |
+| Ledger writes | PostgreSQL functions designed to validate and post financial movements atomically |
+| Project checks | Vitest, Playwright and structural/security checks |
 
-## Getting started
+The intended data flow keeps financial writes behind authenticated server and database checks; browser code does not write directly to ledger tables. Read the [Security Model](docs/SECURITY.md) and [Database Guide](docs/DATABASE.md) for implementation details and open review items.
 
-### Prerequisites
+## Run it locally
 
-- Node.js **20.9.0 or newer**
-- npm
+### Requirements
+
+- Node.js **20.9 or newer** and npm
+- Docker Desktop for the local Supabase services
 - Git
-- Docker Desktop (for running the local Supabase database)
 
-### 1. Clone the repository
+### Setup
 
 ```powershell
 git clone https://github.com/Yoshi-dev-mode/kabisera-ledger.git
 cd kabisera-ledger
-```
-
-### 2. Install dependencies
-
-```powershell
 npm install
-```
-
-### 3. Configure environment variables
-
-Create your local environment file:
-
-```powershell
 Copy-Item .env.example .env.local
-```
-
-Fill in the required Supabase values in `.env.local`. Never commit this file or expose your `service_role` key.
-
-### 4. Initialize and start Supabase locally
-
-If this is your first local setup:
-
-```powershell
-npx supabase init
-```
-
-In `supabase/config.toml`, configure authentication as described in the setup guide (including disabling public sign-ups and setting a minimum password length).
-
-Then start and reset the local database:
-
-```powershell
 npm run db:start
-npm run db:reset
 npm run db:status
 ```
 
-Use the local API URL and anon key reported by the status command in `.env.local`.
-
-### 5. Verify and run the application
+Use the local API URL and anon key shown by `db:status` to fill in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local`. Then apply the local migrations:
 
 ```powershell
-npm run verify
-npm run build
-npm run dev
+npm run db:reset
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Create the first owner in local Supabase Studio: add a confirmed Auth user, update the email and display name in `supabase/bootstrap/first-owner.sql`, then run that SQL in the Studio SQL Editor. The app cannot create owner accounts by design. Start the app with `npm run dev` and open [http://localhost:3000](http://localhost:3000).
 
-**Important:** Before using real business or customer records, complete the database checks and acceptance walkthrough in [Testing Guide](docs/TESTING.md). Use test data while validating the application.
+Local Supabase authentication settings and the full first-run workflow are in the [User Guide](docs/USER-GUIDE.md) and [Testing Guide](docs/TESTING.md). Never commit `.env.local`. `SUPABASE_SERVICE_ROLE_KEY` is needed to add staff; it bypasses row-level security, so keep it server-side and secret. `DATABASE_URL` is only needed for database backup and restore tasks.
 
-For the complete Windows setup, owner-account bootstrap, and first-run instructions, follow the repository's setup notes and [User Guide](docs/USER-GUIDE.md).
+### Useful commands
 
-## Available scripts
-
-| Command | Description |
+| Command | Purpose |
 | --- | --- |
-| `npm run dev` | Start the development server |
-| `npm run build` | Build the production application |
-| `npm start` | Start the production server |
-| `npm run typecheck` | Run the TypeScript compiler |
+| `npm run dev` | Start the local web app |
+| `npm run typecheck` | Check TypeScript types |
 | `npm run lint` | Run ESLint |
 | `npm test` | Run unit tests |
 | `npm run test:e2e` | Run Playwright end-to-end tests |
-| `npm run verify` | Run typecheck, lint, unit tests, and project checks |
-| `npm run check` | Run project structure and safety checks |
-| `npm run db:start` | Start the local Supabase stack |
-| `npm run db:stop` | Stop the local Supabase stack |
-| `npm run db:status` | Show local Supabase service status |
-| `npm run db:reset` | Reset the local database and apply migrations |
-| `npm run db:push` | Push local migrations to the linked Supabase project |
+| `npm run verify` | Run the project’s combined checks |
+| `npm run build` | Create a production build |
+| `npm run db:reset` | Recreate the local database from migrations and seed data |
 
-## Documentation
+## Readiness and next steps
 
-More detailed documentation is available in the `docs/` directory:
+**This repository is a prototype in progress.** The project’s validation notes say the real database migrations, installed-library build, and browser workflows have not yet been run end to end. The database and security design therefore still need hands-on validation before the app is used with live business or customer records.
 
-- [User Guide](docs/USER-GUIDE.md) — using the application and its daily workflow
-- [Architecture](docs/ARCHITECTURE.md) — ledger design and accounting rules
-- [Database](docs/DATABASE.md) — database structure and relationships
-- [Security](docs/SECURITY.md) — authentication, authorization, and data protection
-- [Testing](docs/TESTING.md) — test coverage, validation status, and acceptance checklist
-- [Deployment](docs/DEPLOYMENT.md) — deploying the application and configuring Supabase
-- [Backup and Restore](docs/BACKUP-RESTORE.md) — protecting and restoring business records
-- [Known Limitations](docs/KNOWN-LIMITATIONS.md) — current constraints and considerations
+Use test data until the [Testing Guide](docs/TESTING.md) passes, the app completes its acceptance walkthrough, and the backup-and-restore procedure has been exercised. The project has not been independently reviewed by an accountant, lawyer or security professional. See [Known Limitations](docs/KNOWN-LIMITATIONS.md) for current scope and open items.
 
-## Security and data handling
+## Explore the project
 
-- The application does not request or store customer GCash MPINs, OTPs, or passwords.
-- Keep all environment variables and service-role credentials private.
-- Backups may contain customer details and financial records; store them securely.
-- Configure authentication and access permissions before inviting staff.
-- This project has not been independently audited by a security professional.
-
-## Project status
-
-Kabisera Ledger is under active development. Features, database migrations, and documentation are being refined and validated. Refer to the [Testing Guide](docs/TESTING.md) and [Known Limitations](docs/KNOWN-LIMITATIONS.md) for the current validation record and outstanding considerations.
-
-Do not use the application as the sole record of a live business until the database checks, application tests, deployment checks, and backup/restore process have been completed successfully.
-
-## Disclaimer
-
-Kabisera Ledger is an independent project for manual business recordkeeping. It is not affiliated with, endorsed by, or integrated with GCash or its operators. It does not initiate, process, or verify GCash transactions. Users are responsible for entering accurate records and maintaining their own financial backups.
+- [User Guide](docs/USER-GUIDE.md) — setup and everyday workflows
+- [Architecture](docs/ARCHITECTURE.md) — ledger model and accounting rules
+- [Database](docs/DATABASE.md) — schema and relationships
+- [Security](docs/SECURITY.md) — authentication, permissions and data handling
+- [Testing](docs/TESTING.md) — validation record and acceptance checklist
+- [Deployment](docs/DEPLOYMENT.md) — staging and deployment guidance
+- [Backup and Restore](docs/BACKUP-RESTORE.md) — backup and recovery procedure
+- [Known Limitations](docs/KNOWN-LIMITATIONS.md) — current boundaries and outstanding work
 
 ---
 
-<p align="center">
-  Built to make small-business recordkeeping more organized, transparent, and manageable.
-</p>
+<div align="center">
+
+**Kabisera Ledger** · Clearer records for everyday counter transactions.
+
+</div>
