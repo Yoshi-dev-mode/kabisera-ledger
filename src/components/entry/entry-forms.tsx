@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { idleState, type ActionState } from "@/lib/action-state";
 import type { LoadProduct, AppSettings, ExpenseCategory } from "@/lib/data/settings";
 import {
-  centsToInput, previewAdjustment, previewExpense, previewLoad, previewOpening, previewService, suggestFee, suggestLoadCost, visibleCustomerOptions,
+  centsToInput, optionalCents, previewAdjustment, previewExpense, previewLoad, previewOpening, previewService, requiredCents, suggestFee, suggestLoadCost, visibleCustomerOptions,
   type AdjustmentKind, type FloatName, type Preview,
 } from "@/lib/entry";
 import type { FeeRule } from "@/lib/fees";
@@ -45,6 +45,27 @@ function Radio({ name, value, label, checked, onChange }: { name: string; value:
       <input type="radio" name={name} value={value} checked={checked} onChange={onChange} className="size-4 accent-primary" />
       {label}
     </label>
+  );
+}
+
+function CreditFields({ payLater, onPayLater, unpaid, onUnpaid }: {
+  payLater: boolean; onPayLater: (value: boolean) => void; unpaid: string; onUnpaid: (value: string) => void;
+}) {
+  return (
+    <fieldset className="flex flex-col gap-2 rounded-control border border-border bg-secondary/50 p-3">
+      <legend className="px-1 text-[13px] font-medium">Customer payment</legend>
+      <label className="flex items-center gap-2">
+        <input type="checkbox" checked={payLater} onChange={(e) => onPayLater(e.target.checked)} className="size-4 accent-primary" />
+        Pay later in full
+      </label>
+      <Field
+        id="unpaid"
+        label={payLater ? "Amount owed (₱)" : "Left unpaid (₱, optional)"}
+        help={payLater ? "Choose a customer above. The full total will be recorded as their debt." : "Leave blank if paid in full. For a partial payment, choose a customer above and enter what they still owe."}
+      >
+        <Input id="unpaid" name="unpaid" inputMode="decimal" autoComplete="off" placeholder="0.00" readOnly={payLater} value={unpaid} onChange={(e) => onUnpaid(e.target.value)} />
+      </Field>
+    </fieldset>
   );
 }
 
@@ -134,6 +155,7 @@ export function ServiceEntryForm({ type, action, idempotencyKey, customers, rule
   const [feeTouched, setFeeTouched] = useState(false);
   const [modeTouched, setModeTouched] = useState(false);
   const [unpaid, setUnpaid] = useState("");
+  const [payLater, setPayLater] = useState(false);
   const [cost, setCost] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [ruleNote, setRuleNote] = useState<string | null>(null);
@@ -148,8 +170,12 @@ export function ServiceEntryForm({ type, action, idempotencyKey, customers, rule
     if (s && !modeTouched) setFeeMode(s.feeMode);
   }
 
-  const preview = previewService({ type, amount, fee, feeMode, unpaid, providerCost: cost, customerId });
   const isIn = type === "cash_in";
+  const principalCents = requiredCents(amount);
+  const addedFeeCents = feeMode === "on_top" ? optionalCents(fee) : 0;
+  const totalDue = principalCents === null || addedFeeCents === null ? null : principalCents + addedFeeCents;
+  const credit = payLater ? (totalDue === null ? "" : centsToInput(totalDue)) : unpaid;
+  const preview = previewService({ type, amount, fee, feeMode, unpaid: credit, providerCost: cost, customerId });
 
   return (
     <form action={formAction} className="flex max-w-140 flex-col gap-4" noValidate onChange={(e) => {
@@ -166,7 +192,7 @@ export function ServiceEntryForm({ type, action, idempotencyKey, customers, rule
     }}>
       <input type="hidden" name="key" value={idempotencyKey} />
       <input type="hidden" name="type" value={type} />
-      <CustomerPicker customers={customers} required={false} />
+      <CustomerPicker customers={customers} required={isIn && (payLater || (optionalCents(unpaid) ?? 0) > 0)} />
       <Field id="amount" label={isIn ? "Cash-in amount (₱)" : "Cash-out amount (₱)"} help={isIn ? "The amount the customer wants in their GCash wallet." : "The amount the customer wants in cash."}>
         <Input id="amount" name="amount" inputMode="decimal" autoComplete="off" required placeholder="0.00" value={amount} onChange={(e) => onAmount(e.target.value)} />
       </Field>
@@ -181,9 +207,7 @@ export function ServiceEntryForm({ type, action, idempotencyKey, customers, rule
         <Input id="fee" name="fee" inputMode="decimal" autoComplete="off" placeholder="0.00" value={fee} onChange={(e) => { setFee(e.target.value); setFeeTouched(true); }} />
       </Field>
       {isIn ? (
-        <Field id="unpaid" label="Left unpaid (₱, optional)" help="If the customer will pay later, enter how much. It becomes a debt (utang) and needs a customer.">
-          <Input id="unpaid" name="unpaid" inputMode="decimal" autoComplete="off" placeholder="0.00" value={unpaid} onChange={(e) => setUnpaid(e.target.value)} />
-        </Field>
+        <CreditFields payLater={payLater} onPayLater={setPayLater} unpaid={credit} onUnpaid={setUnpaid} />
       ) : null}
       <Field id="gcashReference" label={settings.requireGcashReference ? "GCash reference number (required)" : "GCash reference number (optional)"}>
         <Input id="gcashReference" name="gcashReference" maxLength={64} autoComplete="off" required={settings.requireGcashReference} />
@@ -218,6 +242,7 @@ export function LoadEntryForm({ action, idempotencyKey, customers, products, set
   const [price, setPrice] = useState("");
   const [payment, setPayment] = useState<"cash" | "gcash">("cash");
   const [unpaid, setUnpaid] = useState("");
+  const [payLater, setPayLater] = useState(false);
   const [customerId, setCustomerId] = useState("");
   const [costTouched, setCostTouched] = useState(false);
   const product = products.find((p) => p.id === productId) ?? null;
@@ -230,14 +255,15 @@ export function LoadEntryForm({ action, idempotencyKey, customers, products, set
   function onProduct(id: string) {
     setProductId(id);
     const p = products.find((x) => x.id === id);
-    if (p) {
-      setSource(p.defaultSource);
-      const s = suggestLoadCost(face, p.costBpsOfFace, settings.rounding);
-      if (!costTouched && s !== null) setCost(centsToInput(s));
+    if (p) setSource(p.defaultSource);
+    if (!costTouched) {
+      const s = suggestLoadCost(face, p?.costBpsOfFace ?? null, settings.rounding);
+      setCost(s === null ? "" : centsToInput(s));
     }
   }
 
-  const preview = previewLoad({ face, cost, price, source, payment, unpaid, customerId });
+  const credit = payLater ? price : unpaid;
+  const preview = previewLoad({ face, cost, price, source, payment, unpaid: credit, customerId });
 
   return (
     <form action={formAction} className="flex max-w-140 flex-col gap-4" noValidate onChange={(e) => {
@@ -253,11 +279,11 @@ export function LoadEntryForm({ action, idempotencyKey, customers, products, set
       }
     }}>
       <input type="hidden" name="key" value={idempotencyKey} />
-      <CustomerPicker customers={customers} required={false} />
-      <Field id="productId" label="Product (optional)">
+      <CustomerPicker customers={customers} required={payLater || (optionalCents(unpaid) ?? 0) > 0} />
+      <Field id="productId" label="Network or load product">
         <select id="productId" name="productId" value={productId} onChange={(e) => onProduct(e.target.value)} className="h-9 rounded-control border border-input bg-surface px-2 text-[14px]">
-          <option value="">Other</option>
-          {products.map((p) => <option key={p.id} value={p.id}>{p.network}: {p.label}</option>)}
+          <option value="">No network selected / Other</option>
+          {products.map((p) => <option key={p.id} value={p.id}>{p.network === p.label ? p.network : `${p.network}: ${p.label}`}</option>)}
         </select>
       </Field>
       <fieldset className="flex flex-col gap-1.5">
@@ -272,16 +298,14 @@ export function LoadEntryForm({ action, idempotencyKey, customers, products, set
         <Input id="cost" name="cost" inputMode="decimal" autoComplete="off" required placeholder="0.00" value={cost} onChange={(e) => { setCost(e.target.value); setCostTouched(true); }} />
       </Field>
       <Field id="price" label="Selling price (₱)"><Input id="price" name="price" inputMode="decimal" autoComplete="off" required placeholder="0.00" value={price} onChange={(e) => setPrice(e.target.value)} /></Field>
-      <fieldset className="flex flex-col gap-1.5">
+      <CreditFields payLater={payLater} onPayLater={setPayLater} unpaid={credit} onUnpaid={setUnpaid} />
+      <fieldset hidden={payLater} className={payLater ? "hidden" : "flex flex-col gap-1.5"}>
         <legend className="pb-1 text-[13px] font-medium">Paid now by</legend>
         <div className="flex gap-5">
           <Radio name="payment" value="cash" label="Cash" checked={payment === "cash"} onChange={() => setPayment("cash")} />
           <Radio name="payment" value="gcash" label="GCash" checked={payment === "gcash"} onChange={() => setPayment("gcash")} />
         </div>
       </fieldset>
-      <Field id="unpaid" label="Left unpaid (₱, optional)" help="Becomes a debt and needs a customer.">
-        <Input id="unpaid" name="unpaid" inputMode="decimal" autoComplete="off" placeholder="0.00" value={unpaid} onChange={(e) => setUnpaid(e.target.value)} />
-      </Field>
       <Field id="gcashReference" label="GCash reference number (optional)"><Input id="gcashReference" name="gcashReference" maxLength={64} autoComplete="off" /></Field>
       <Field id="notes" label="Notes (optional)"><Input id="notes" name="notes" maxLength={500} autoComplete="off" /></Field>
       {isOwner ? <OwnerOverride /> : null}

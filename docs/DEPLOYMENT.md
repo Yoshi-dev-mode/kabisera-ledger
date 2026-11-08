@@ -23,7 +23,7 @@ it before pointing real staff at anything. Nothing here has been security-review
 ```powershell
 npx supabase login
 npx supabase link --project-ref YOUR-PROJECT-REF
-npm run db:push                    # applies all 14 migrations to the REAL project
+npm run db:push -- --linked        # applies pending migrations to the linked project
 ```
 
 4. **Run the SQL check scripts on a separate staging project**, not on the one that will hold real data. They assume an empty database and insert test rows (rolled back).
@@ -71,7 +71,16 @@ cannot carry the per-request nonce; check it explicitly.
 3. Take a backup immediately before deploying a database change.
 4. Deploy the app. If something is wrong, redeploy the previous version; database changes need a new migration to undo.
 
-## 6. Running costs and limits to check yourself
+## 6. Adding the default mobile load networks
+
+Migration `20261023000015_default_load_networks.sql` adds catalog rows for TM, GLOBE, SUN, SMART, DITO, GoMo and TnT when that network has no existing product. Existing products keep their settings, including their active status. New entries use the prepaid load balance by default and leave the cost unset so the seller can enter the actual cost. The existing transaction and debt tables already support full and partial credit.
+
+1. Start local Supabase with `npm run db:start`. Preview pending migrations with `npm run db:push -- --local --dry-run`, then apply them with `npm run db:push -- --local`.
+2. In the app, check **New transaction > Mobile load** for the network options. If a network already has only inactive products, activate the intended product under **Settings > Mobile load products**. With test data, record one full-credit cash-in and one partial-credit load sale. Confirm the customer debts match the unpaid amounts.
+3. Before updating a hosted database, follow [Backup and Restore](BACKUP-RESTORE.md). With the CLI version pinned in this repository, link the intended project with `npx supabase link --project-ref YOUR_PROJECT_REF`. Run `npm run db:push -- --linked --dry-run` and review the pending migrations. For a database already on migration 14, expect only migration 15.
+4. Apply the reviewed migrations with `npm run db:push -- --linked`, then deploy the updated app. Use the [Supabase CLI reference](https://supabase.com/docs/reference/cli/introduction#supabase-db-push) for command details.
+
+## 7. Running costs and limits to check yourself
 
 Check the current free-tier limits of the database host (pausing after inactivity, storage, backups) and of the app host
 before relying on them for a business. A paused database means the shop cannot record transactions.
