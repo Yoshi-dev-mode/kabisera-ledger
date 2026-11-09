@@ -80,7 +80,7 @@ export type PeriodReport = {
   transactionCount: number; voidedCount: number;
   cashInCount: number; cashInVolumeCents: number; cashOutCount: number; cashOutVolumeCents: number;
   loadCount: number; loadSalesCents: number; repaymentsCents: number; newDebtCents: number;
-  feesCents: number; loadMarginCents: number; providerCostCents: number; expensesCents: number;
+  feesCents: number; loadMarginCents: number; tipIncomeCents: number; providerCostCents: number; expensesCents: number;
   writeOffsCents: number; varianceCents: number; netProfitCents: number;
 };
 
@@ -93,6 +93,7 @@ export function parsePeriodReport(value: unknown): PeriodReport {
     loadCount: int(r, "load_count"), loadSalesCents: int(r, "load_sales_cents"),
     repaymentsCents: int(r, "repayments_cents"), newDebtCents: int(r, "new_debt_cents"),
     feesCents: int(r, "fees_cents"), loadMarginCents: int(r, "load_margin_cents"),
+    tipIncomeCents: intOrNull(r, "tip_income_cents") ?? 0,
     providerCostCents: int(r, "provider_cost_cents"), expensesCents: int(r, "expenses_cents"),
     writeOffsCents: int(r, "write_offs_cents"), varianceCents: int(r, "variance_cents"), netProfitCents: int(r, "net_profit_cents"),
   };

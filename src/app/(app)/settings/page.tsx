@@ -66,7 +66,7 @@ export default async function SettingsPage() {
         </details>
       </Section>
 
-      <Section id="load" title="Mobile load products" intro="The networks and products you sell. If you enter what a product costs you as a percentage, the cost is filled in for each sale (you can still change it).">
+      <Section id="load" title="Mobile load products" intro="The networks and products you sell. A configured cost percentage sets the business cost for that product. Without one, the load amount is used as the cost.">
         {products.length === 0 ? <p className="text-[14px] text-muted-foreground">No products yet. You can still record a load sale by typing its cost.</p> : (
           <ul className="flex flex-col divide-y divide-border">
             {products.map((p) => (

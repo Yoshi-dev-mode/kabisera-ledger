@@ -5,7 +5,9 @@ import { revalidatePath } from "next/cache";
 import { failure, type ActionState } from "@/lib/action-state";
 import { getActionSession } from "@/lib/auth/session";
 import { parsePostResult } from "@/lib/data/debts";
+import { fetchLoadProducts, fetchSettings } from "@/lib/data/queries";
 import { friendlyDbError } from "@/lib/errors";
+import { calculateLoadSale, suggestLoadCost } from "@/lib/entry";
 import { formDate, formMethod, formMoney, formText, optionalMoney } from "@/lib/forms";
 import { createClient } from "@/lib/supabase/server";
 import { isBusinessDateString } from "@/lib/time";
@@ -18,6 +20,12 @@ const orNull = (value: string) => (value === "" ? null : value);
 async function post(fn: string, args: Record<string, unknown>, revalidate: string[]): Promise<ActionState> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc(fn, args);
+  if (fn === "post_mobile_load" && error?.code === "PGRST202") {
+    return failure("Mobile load could not be saved. Ask the owner to apply the latest database update, then try again.");
+  }
+  if (fn === "post_mobile_load" && error?.code === "23514" && /^not enough in mobile-load balance:/i.test(error.message)) {
+    return failure("Your recorded prepaid load balance cannot cover this sale. Record a prepaid load top-up if you bought one, or select GCash if you bought this load directly from GCash.");
+  }
   if (error) return failure(friendlyDbError(error, "The transaction could not be recorded."));
   const result = parsePostResult(data);
   for (const path of revalidate) revalidatePath(path);
@@ -80,20 +88,31 @@ export async function postLoadAction(_previous: ActionState, formData: FormData)
   const source = formText(formData, "source");
   const payment = formMethod(formData, "payment");
   const face = formMoney(formData, "face", "the load amount");
-  const cost = formMoney(formData, "cost", "what the load cost you");
-  const price = formMoney(formData, "price", "the selling price");
-  const unpaid = optionalMoney(formData, "unpaid", "the unpaid amount");
+  const fee = optionalMoney(formData, "serviceFee", "the service fee");
+  const payLater = formText(formData, "payLater") === "on";
+  const unpaid = payLater ? { ok: true, cents: 0 } as const : optionalMoney(formData, "unpaid", "the unpaid amount");
 
   if (!isUuid(c.key)) return failure("This form expired. Reload the page and try again.");
   if (c.customerId !== "" && !isUuid(c.customerId)) return failure("That customer was not found.");
   if (productId !== "" && !isUuid(productId)) return failure("That load product was not found.");
   if (source !== "gcash_direct" && source !== "prepaid_wallet") return failure("Choose where the load came from.");
   if (!face.ok) return failure(face.message);
-  if (!cost.ok) return failure(cost.message);
-  if (!price.ok) return failure(price.message);
+  if (!fee.ok) return failure(fee.message);
   if (!unpaid.ok) return failure(unpaid.message);
   if (!payment) return failure("Choose cash or GCash for the part paid now.");
   if (c.reference === null || c.notes === null || c.override === null) return failure("The reference, notes or override reason are too long.");
+
+  let configuredCost: number | null = null;
+  if (productId !== "") {
+    const product = (await fetchLoadProducts({ activeOnly: true })).find((p) => p.id === productId);
+    if (!product) return failure("That load product is no longer available. Choose another product.");
+    if (product.costBpsOfFace !== null) {
+      const settings = await fetchSettings();
+      configuredCost = suggestLoadCost(formText(formData, "face"), product.costBpsOfFace, settings.rounding);
+    }
+  }
+  const sale = calculateLoadSale(face.cents, fee.cents, configuredCost);
+  if (!sale.ok) return failure(sale.message);
 
   return post("post_mobile_load", {
     p_idempotency_key: c.key,
@@ -101,10 +120,11 @@ export async function postLoadAction(_previous: ActionState, formData: FormData)
     p_load_product_id: orNull(productId),
     p_load_source: source,
     p_face_cents: face.cents,
-    p_cost_cents: cost.cents,
-    p_price_cents: price.cents,
+    p_cost_cents: sale.costCents,
+    p_price_cents: sale.priceCents,
+    ...(fee.cents > 0 ? { p_fee_cents: fee.cents } : {}),
     p_payment_method: payment,
-    p_credit_cents: unpaid.cents,
+    p_credit_cents: payLater ? sale.priceCents : unpaid.cents,
     p_gcash_reference: orNull(c.reference),
     p_notes: orNull(c.notes),
     p_override_reason: orNull(c.override),

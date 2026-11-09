@@ -30,6 +30,7 @@ export default async function TransactionPage({ params }: { params: Promise<{ id
   const { profile } = await requireAnyPermission(["reports.view", "customers.view", "transactions.record", "repayments.record"]);
   const t = await fetchTransactionDetail(id);
   if (!t) notFound();
+  const tip = t.lines.reduce((sum, line) => line.entryKind !== "reversal" && line.accountCode === "TIP_INCOME" ? sum - line.amountCents : sum, 0);
 
   const owner = isOwner(profile);
   const canRequest = can(profile, "transactions.request_void") && !owner;
@@ -50,7 +51,13 @@ export default async function TransactionPage({ params }: { params: Promise<{ id
       <section aria-labelledby="details-title" className="rounded-card bg-surface p-5">
         <h2 id="details-title" className="sr-only">Details</h2>
         <dl className="divide-y divide-rule">
-          <Row label="Amount"><Money cents={t.principalCents} /></Row>
+          <Row label={t.type === "debt_repayment" ? "Debt payment" : t.type === "mobile_load" ? "Load amount" : "Amount"}><Money cents={t.principalCents} /></Row>
+          {t.type === "debt_repayment" ? (
+            <>
+              <Row label="Tip income"><Money cents={tip} /></Row>
+              <Row label="Total received"><Money cents={t.principalCents + tip} /></Row>
+            </>
+          ) : null}
           {t.type === "cash_in" || t.type === "cash_out" ? (
             <>
               <Row label="Service fee"><Money cents={t.feeCents} />{t.feeMode ? <span className="text-muted-foreground"> · {t.feeMode === "on_top" ? "charged on top" : "deducted from the amount"}</span> : null}</Row>
@@ -59,8 +66,10 @@ export default async function TransactionPage({ params }: { params: Promise<{ id
           ) : null}
           {t.type === "mobile_load" ? (
             <>
-              <Row label="Sold for">{t.customerPriceCents === null ? "–" : <Money cents={t.customerPriceCents} />}</Row>
-              <Row label="Load cost">{t.loadCostCents === null ? "–" : <Money cents={t.loadCostCents} />}{t.loadSource ? <span className="text-muted-foreground"> · {t.loadSource === "prepaid_wallet" ? "from the load balance" : "bought from GCash"}</span> : null}</Row>
+              {t.feeCents > 0 && <Row label="Service fee"><Money cents={t.feeCents} /></Row>}
+              <Row label="Customer total">{t.customerPriceCents === null ? "–" : <Money cents={t.customerPriceCents} />}</Row>
+              <Row label="Business cost">{t.loadCostCents === null ? "–" : <Money cents={t.loadCostCents} />}{t.loadSource ? <span className="text-muted-foreground"> · {t.loadSource === "prepaid_wallet" ? "from the load balance" : "bought from GCash"}</span> : null}</Row>
+              {t.customerPriceCents !== null && t.loadCostCents !== null ? <Row label="Load margin"><Money cents={t.customerPriceCents - t.loadCostCents - t.feeCents} /></Row> : null}
             </>
           ) : null}
           {t.creditCents ? <Row label="Left unpaid"><Money cents={t.creditCents} /></Row> : null}

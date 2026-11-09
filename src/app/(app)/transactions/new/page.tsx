@@ -5,8 +5,9 @@ import {
   AdjustmentEntryForm, ExpenseEntryForm, LoadEntryForm, OpeningBalancesForm, ServiceEntryForm,
 } from "@/components/entry/entry-forms";
 import { requirePermission } from "@/lib/auth/session";
+import { can } from "@/lib/auth/permissions";
 import {
-  fetchActiveCustomers, fetchCategories, fetchFeeRules, fetchLoadProducts, fetchSettings,
+  fetchAccountOverview, fetchActiveCustomers, fetchCategories, fetchFeeRules, fetchLoadProducts, fetchSettings,
 } from "@/lib/data/queries";
 import { todayBusinessDate } from "@/lib/time";
 import { cn } from "@/lib/utils";
@@ -36,12 +37,13 @@ export default async function NewTransactionPage({ searchParams }: { searchParam
   const key = crypto.randomUUID();
 
   const needsCustomers = type === "cash_in" || type === "cash_out" || type === "mobile_load";
-  const [settings, customers, rules, products, categories] = await Promise.all([
+  const [settings, customers, rules, products, categories, accounts] = await Promise.all([
     fetchSettings(),
     needsCustomers ? fetchActiveCustomers() : Promise.resolve([]),
     type === "cash_in" || type === "cash_out" ? fetchFeeRules({ activeOnly: true }) : Promise.resolve([]),
     type === "mobile_load" ? fetchLoadProducts({ activeOnly: true }) : Promise.resolve([]),
     type === "expense" ? fetchCategories({ activeOnly: true }) : Promise.resolve([]),
+    type === "mobile_load" && can(profile, "accounts.view") ? fetchAccountOverview().catch(() => []) : Promise.resolve([]),
   ]);
   const options = customers.map((c) => ({ id: c.id, name: c.displayName }));
 
@@ -68,7 +70,16 @@ export default async function NewTransactionPage({ searchParams }: { searchParam
         {type === "cash_in" || type === "cash_out" ? (
           <ServiceEntryForm key={type} type={type} action={postServiceAction} idempotencyKey={key} customers={options} rules={rules} settings={settings} businessDate={todayBusinessDate()} isOwner={owner} />
         ) : type === "mobile_load" ? (
-          <LoadEntryForm action={postLoadAction} idempotencyKey={key} customers={options} products={products} settings={settings} isOwner={owner} />
+          <LoadEntryForm
+            action={postLoadAction}
+            idempotencyKey={key}
+            customers={options}
+            products={products}
+            settings={settings}
+            isOwner={owner}
+            loadBalance={accounts.find((account) => account.code === "LOAD_BALANCE")?.balanceCents ?? null}
+            gcashBalance={accounts.find((account) => account.code === "GCASH_WALLET")?.balanceCents ?? null}
+          />
         ) : type === "expense" ? (
           <ExpenseEntryForm action={postExpenseAction} idempotencyKey={key} categories={categories} />
         ) : type === "adjustment" ? (

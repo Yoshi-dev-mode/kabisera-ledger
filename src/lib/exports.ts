@@ -27,6 +27,10 @@ export function transactionsCsv(rows: readonly TransactionRow[], generatedAt: Da
     { header: "Status", value: (r) => (r.status === "voided" ? "Voided" : "Posted") },
     { header: "Recorded by", value: (r) => r.recordedByName },
     { header: "Notes", value: (r) => r.notes },
+    { header: "Business cost (load)", value: (r) => r.loadCostCents === null ? "" : toDecimalPesos(r.loadCostCents), kind: "number" },
+    { header: "Load margin", value: (r) => r.customerPriceCents === null || r.loadCostCents === null ? "" : toDecimalPesos(r.customerPriceCents - r.loadCostCents - r.feeCents), kind: "number" },
+    { header: "Tip income", value: (r) => r.type === "debt_repayment" ? toDecimalPesos(r.tipCents) : "", kind: "number" },
+    { header: "Total received (repayment)", value: (r) => r.type === "debt_repayment" ? toDecimalPesos(r.principalCents + r.tipCents) : "", kind: "number" },
   ];
   const body = toCsv(rows, columns, { bom: true });
   return `${body}${csvCell(`Generated ${formatManilaDateTime(generatedAt)} Philippine time`)}\r\n`;
@@ -94,16 +98,17 @@ export function periodCsv(r: PeriodReport, from: string, to: string, generatedAt
     { measure: `Cash-in volume (${r.cashInCount})`, amount: money(r.cashInVolumeCents), note: "" },
     { measure: `Cash-out volume (${r.cashOutCount})`, amount: money(r.cashOutVolumeCents), note: "" },
     { measure: `Mobile load sold (${r.loadCount})`, amount: money(r.loadSalesCents), note: "" },
-    { measure: "Repayments received", amount: money(r.repaymentsCents), note: "not income" },
+    { measure: "Debt payments", amount: money(r.repaymentsCents), note: "excludes tips" },
     { measure: "New debt created", amount: money(r.newDebtCents), note: "not cash" },
     { measure: "EARNED", amount: "", note: "" },
     { measure: "Service fees", amount: money(r.feesCents), note: "" },
     { measure: "Mobile-load margin", amount: money(r.loadMarginCents), note: "" },
+    { measure: "Tip income", amount: money(r.tipIncomeCents), note: "" },
     { measure: "COSTS", amount: "", note: "" },
     { measure: "Provider costs", amount: money(-r.providerCostCents), note: "" },
     { measure: "Operating expenses", amount: money(-r.expensesCents), note: "" },
     { measure: "Debt write-offs and corrections", amount: money(-r.writeOffsCents), note: "" },
-    { measure: "NET PROFIT", amount: money(r.netProfitCents), note: "fees + margin - costs" },
+    { measure: "NET PROFIT", amount: money(r.netProfitCents), note: "fees + load margin + tips - costs" },
     { measure: "Counting differences", amount: money(-r.varianceCents), note: "reported separately, not in profit" },
   ];
   const cols: CsvColumn<Line>[] = [
@@ -120,6 +125,7 @@ export function seriesCsv(points: readonly GroupedPoint[], generatedAt: Date): s
     { header: "Transactions", value: (p) => String(p.transactionCount), kind: "number" },
     { header: "Service fees", value: (p) => money(p.feesCents), kind: "number" },
     { header: "Load margin", value: (p) => money(p.loadMarginCents), kind: "number" },
+    { header: "Tip income", value: (p) => money(p.tipIncomeCents), kind: "number" },
     { header: "Costs", value: (p) => money(-p.costsCents), kind: "number" },
     { header: "Net profit", value: (p) => money(p.netProfitCents), kind: "number" },
   ];

@@ -64,8 +64,8 @@ describe("chart helpers", () => {
     expect(lastNDates("2028-03-01", 2)).toEqual(["2028-02-29", "2028-03-01"]);
   });
   it("turns the series into chart points", () => {
-    const pts = toChartPoints([{ businessDate: "2026-10-24", feesCents: 2000, loadMarginCents: 300, costsCents: 500, netProfitCents: 1800, transactionCount: 4 }]);
-    expect(pts).toEqual([{ date: "2026-10-24", label: "Oct 24", profitCents: 1800, feesCents: 2300, costsCents: 500 }]);
+    const pts = toChartPoints([{ businessDate: "2026-10-24", feesCents: 2000, loadMarginCents: 300, tipIncomeCents: 100, costsCents: 500, netProfitCents: 1900, transactionCount: 4 }]);
+    expect(pts).toEqual([{ date: "2026-10-24", label: "Oct 24", profitCents: 1900, feesCents: 2300, tipIncomeCents: 100, costsCents: 500 }]);
   });
 });
 
@@ -83,6 +83,7 @@ describe("dashboard parsers", () => {
     expect(a[0]?.lastReconciledOn).toBeNull();
     const s = parseDailySummary([{ transaction_count: 4, voided_count: 1, cash_in_volume_cents: 1, cash_out_volume_cents: 2, load_sales_cents: 3, fees_cents: 4, load_margin_cents: 5, provider_cost_cents: 6, expenses_cents: 7, write_offs_cents: 8, variance_cents: 9, net_profit_cents: -2 }]);
     expect(s.netProfitCents).toBe(-2);
+    expect(s.tipIncomeCents).toBe(0);
     expect(parseDailySeries([{ business_date: "2026-10-24", fees_cents: 1, load_margin_cents: 2, costs_cents: 3, net_profit_cents: 0, transaction_count: 1 }])[0]?.businessDate).toBe("2026-10-24");
     const l = parseAccountLedger([{ line_id: 1, entry_date: "2026-10-24", created_at: "2026-10-24T01:00:00Z", transaction_id: "t", public_ref: "KL-1", tx_type: "cash_in", customer_name: null, entry_kind: "posting", change_cents: 5, balance_after_cents: 5, memo: null, total_count: 12 }]);
     expect(l.total).toBe(12);

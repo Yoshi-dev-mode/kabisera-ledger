@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { idleState, type ActionState } from "@/lib/action-state";
 import type { LoadProduct, AppSettings, ExpenseCategory } from "@/lib/data/settings";
 import {
-  centsToInput, optionalCents, previewAdjustment, previewExpense, previewLoad, previewOpening, previewService, requiredCents, suggestFee, suggestLoadCost, visibleCustomerOptions,
+  calculateLoadSale, centsToInput, optionalCents, previewAdjustment, previewExpense, previewLoad, previewOpening, previewService, requiredCents, suggestFee, suggestLoadCost, visibleCustomerOptions,
   type AdjustmentKind, type FloatName, type Preview,
 } from "@/lib/entry";
 import type { FeeRule } from "@/lib/fees";
@@ -55,7 +55,7 @@ function CreditFields({ payLater, onPayLater, unpaid, onUnpaid }: {
     <fieldset className="flex flex-col gap-2 rounded-control border border-border bg-secondary/50 p-3">
       <legend className="px-1 text-[13px] font-medium">Customer payment</legend>
       <label className="flex items-center gap-2">
-        <input type="checkbox" checked={payLater} onChange={(e) => onPayLater(e.target.checked)} className="size-4 accent-primary" />
+        <input type="checkbox" name="payLater" checked={payLater} onChange={(e) => onPayLater(e.target.checked)} className="size-4 accent-primary" />
         Pay later in full
       </label>
       <Field
@@ -137,8 +137,8 @@ function OwnerOverride() {
   );
 }
 
-function Submit({ pending, label }: { pending: boolean; label: string }) {
-  return <div><Button type="submit" disabled={pending}>{pending ? "Recording…" : label}</Button></div>;
+function Submit({ pending, label, disabled = false }: { pending: boolean; label: string; disabled?: boolean }) {
+  return <div><Button type="submit" disabled={pending || disabled}>{pending ? "Recording…" : label}</Button></div>;
 }
 
 /* ------------------------------------------------------------------ cash-in / cash-out */
@@ -231,39 +231,39 @@ export function ServiceEntryForm({ type, action, idempotencyKey, customers, rule
 
 /* ------------------------------------------------------------------ mobile load */
 
-export function LoadEntryForm({ action, idempotencyKey, customers, products, settings, isOwner }: {
+export function LoadEntryForm({ action, idempotencyKey, customers, products, settings, isOwner, loadBalance, gcashBalance }: {
   action: Action; idempotencyKey: string; customers: CustomerOption[]; products: LoadProduct[]; settings: AppSettings; isOwner: boolean;
+  loadBalance: number | null; gcashBalance: number | null;
 }) {
   const [state, formAction, pending] = useActionState(action, idleState);
   const [productId, setProductId] = useState("");
   const [source, setSource] = useState<"gcash_direct" | "prepaid_wallet">("prepaid_wallet");
   const [face, setFace] = useState("");
-  const [cost, setCost] = useState("");
-  const [price, setPrice] = useState("");
+  const [serviceFee, setServiceFee] = useState("");
   const [payment, setPayment] = useState<"cash" | "gcash">("cash");
   const [unpaid, setUnpaid] = useState("");
   const [payLater, setPayLater] = useState(false);
   const [customerId, setCustomerId] = useState("");
-  const [costTouched, setCostTouched] = useState(false);
   const product = products.find((p) => p.id === productId) ?? null;
 
-  function onFace(value: string) {
-    setFace(value);
-    const s = suggestLoadCost(value, product?.costBpsOfFace ?? null, settings.rounding);
-    if (!costTouched && s !== null) setCost(centsToInput(s));
-  }
   function onProduct(id: string) {
     setProductId(id);
     const p = products.find((x) => x.id === id);
     if (p) setSource(p.defaultSource);
-    if (!costTouched) {
-      const s = suggestLoadCost(face, p?.costBpsOfFace ?? null, settings.rounding);
-      setCost(s === null ? "" : centsToInput(s));
-    }
   }
 
-  const credit = payLater ? price : unpaid;
-  const preview = previewLoad({ face, cost, price, source, payment, unpaid: credit, customerId });
+  const feeCents = optionalCents(serviceFee);
+  const configuredCost = suggestLoadCost(face, product?.costBpsOfFace ?? null, settings.rounding);
+  const sale = calculateLoadSale(requiredCents(face), feeCents, configuredCost);
+  const total = sale.ok ? centsToInput(sale.priceCents) : "";
+  const credit = payLater ? total : unpaid;
+  const preview = sale.ok
+    ? previewLoad({ face, cost: centsToInput(sale.costCents), price: total, feeCents: feeCents ?? 0, source, payment, unpaid: credit, customerId })
+    : sale;
+  const usingLoadBalance = source === "prepaid_wallet";
+  const selectedBalance = usingLoadBalance ? loadBalance : gcashBalance;
+  const sourceChange = preview.ok ? (usingLoadBalance ? preview.effects.load : preview.effects.gcash) : 0;
+  const insufficientBalance = !settings.allowNegativeFloats && selectedBalance !== null && sourceChange < 0 && selectedBalance + sourceChange < 0;
 
   return (
     <form action={formAction} className="flex max-w-140 flex-col gap-4" noValidate onChange={(e) => {
@@ -290,14 +290,19 @@ export function LoadEntryForm({ action, idempotencyKey, customers, products, set
         <legend className="pb-1 text-[13px] font-medium">Where did the load come from?</legend>
         <div className="flex flex-col gap-1.5">
           <Radio name="source" value="prepaid_wallet" label="My load balance" checked={source === "prepaid_wallet"} onChange={() => setSource("prepaid_wallet")} />
+          {loadBalance !== null && <p className="pl-6 text-[12px] text-muted-foreground">Recorded load balance: {formatPesos(loadBalance)}</p>}
           <Radio name="source" value="gcash_direct" label="Bought straight from GCash for this customer" checked={source === "gcash_direct"} onChange={() => setSource("gcash_direct")} />
+          {gcashBalance !== null && <p className="pl-6 text-[12px] text-muted-foreground">Recorded GCash balance: {formatPesos(gcashBalance)}</p>}
         </div>
       </fieldset>
-      <Field id="face" label="Load amount (₱)"><Input id="face" name="face" inputMode="decimal" autoComplete="off" required placeholder="0.00" value={face} onChange={(e) => onFace(e.target.value)} /></Field>
-      <Field id="cost" label="What it cost you (₱)" help={product?.costBpsOfFace ? "Suggested from the product. Change it if the cost was different." : "Required: it is what leaves your balance and decides your margin."}>
-        <Input id="cost" name="cost" inputMode="decimal" autoComplete="off" required placeholder="0.00" value={cost} onChange={(e) => { setCost(e.target.value); setCostTouched(true); }} />
+      <Field id="face" label="Load amount (₱)"><Input id="face" name="face" inputMode="decimal" autoComplete="off" required placeholder="0.00" value={face} onChange={(e) => setFace(e.target.value)} /></Field>
+      <Field id="serviceFee" label="Service fee (₱)" help="Added to the load amount. Leave blank if there is no fee.">
+        <Input id="serviceFee" name="serviceFee" inputMode="decimal" autoComplete="off" placeholder="0.00" value={serviceFee} onChange={(e) => setServiceFee(e.target.value)} />
       </Field>
-      <Field id="price" label="Selling price (₱)"><Input id="price" name="price" inputMode="decimal" autoComplete="off" required placeholder="0.00" value={price} onChange={(e) => setPrice(e.target.value)} /></Field>
+      <div aria-live="polite" className="text-[13px]">
+        <p className="font-medium">Customer total: {sale.ok ? formatPesos(sale.priceCents) : "—"}</p>
+        <p className="text-muted-foreground">Business cost: {sale.ok ? formatPesos(sale.costCents) : "—"}</p>
+      </div>
       <CreditFields payLater={payLater} onPayLater={setPayLater} unpaid={credit} onUnpaid={setUnpaid} />
       <fieldset hidden={payLater} className={payLater ? "hidden" : "flex flex-col gap-1.5"}>
         <legend className="pb-1 text-[13px] font-medium">Paid now by</legend>
@@ -309,9 +314,16 @@ export function LoadEntryForm({ action, idempotencyKey, customers, products, set
       <Field id="gcashReference" label="GCash reference number (optional)"><Input id="gcashReference" name="gcashReference" maxLength={64} autoComplete="off" /></Field>
       <Field id="notes" label="Notes (optional)"><Input id="notes" name="notes" maxLength={500} autoComplete="off" /></Field>
       {isOwner ? <OwnerOverride /> : null}
+      {insufficientBalance && (
+        <p role="status" className="text-[13px] text-warning">
+          {usingLoadBalance
+            ? "The recorded load balance cannot cover this sale. Record a prepaid load top-up if you bought one, or select GCash if you bought this load directly from GCash."
+            : "The recorded GCash balance cannot cover this sale. Check the wallet balance and record any missing funds before trying again."}
+        </p>
+      )}
       <PreviewBox preview={preview} />
       <Message state={state} />
-      <Submit pending={pending} label="Record mobile load" />
+      <Submit pending={pending} disabled={!sale.ok} label="Record mobile load" />
     </form>
   );
 }

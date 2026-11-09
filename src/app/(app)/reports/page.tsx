@@ -69,12 +69,13 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
             <Row label={`Cash-in (${period.cashInCount})`}><Money cents={period.cashInVolumeCents} /></Row>
             <Row label={`Cash-out (${period.cashOutCount})`}><Money cents={period.cashOutVolumeCents} /></Row>
             <Row label={`Mobile load sold (${period.loadCount})`}><Money cents={period.loadSalesCents} /></Row>
-            <Row label="Repayments received"><Money cents={period.repaymentsCents} /></Row>
+            <Row label="Debt payments"><Money cents={period.repaymentsCents} /></Row>
             <Row label="New debt created"><Money cents={period.newDebtCents} /></Row>
           </Group>
           <Group title="Earned">
             <Row label="Service fees"><Money cents={period.feesCents} /></Row>
             <Row label="Mobile-load margin"><Money cents={period.loadMarginCents} /></Row>
+            <Row label="Tip income"><Money cents={period.tipIncomeCents} /></Row>
           </Group>
           <Group title="Costs">
             <Row label="Provider costs"><Money cents={-period.providerCostCents} /></Row>
@@ -96,7 +97,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
         <div className="mt-3"><ProfitChart points={groupedToChart(grouped)} /></div>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full min-w-[620px] border-collapse text-[14px]">
-            <thead><tr className="text-left text-[12px] text-muted-foreground"><th className="h-9 px-3 font-normal">Period</th><th className="px-3 text-right font-normal">Transactions</th><th className="px-3 text-right font-normal">Fees</th><th className="px-3 text-right font-normal">Load margin</th><th className="px-3 text-right font-normal">Costs</th><th className="px-3 text-right font-normal">Net profit</th></tr></thead>
+            <thead><tr className="text-left text-[12px] text-muted-foreground"><th className="h-9 px-3 font-normal">Period</th><th className="px-3 text-right font-normal">Transactions</th><th className="px-3 text-right font-normal">Fees</th><th className="px-3 text-right font-normal">Load margin</th><th className="px-3 text-right font-normal">Tip income</th><th className="px-3 text-right font-normal">Costs</th><th className="px-3 text-right font-normal">Net profit</th></tr></thead>
             <tbody>
               {grouped.map((g) => (
                 <tr key={g.key} className="h-11 border-t border-rule">
@@ -104,6 +105,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
                   <td className="num px-3 text-right">{g.transactionCount}</td>
                   <td className="num px-3 text-right"><Money cents={g.feesCents} /></td>
                   <td className="num px-3 text-right"><Money cents={g.loadMarginCents} /></td>
+                  <td className="num px-3 text-right"><Money cents={g.tipIncomeCents} /></td>
                   <td className="num px-3 text-right"><Money cents={-g.costsCents} /></td>
                   <td className="num px-3 text-right font-medium"><Money cents={g.netProfitCents} signed /></td>
                 </tr>

@@ -32,10 +32,10 @@ export function ProfitChart({ points }: { points: ChartPoint[] }) {
       {empty ? <p className="mt-2 text-[13px] text-muted-foreground">No profit has been recorded in this period yet.</p> : null}
       <table className="sr-only">
         <caption>Net profit by day</caption>
-        <thead><tr><th scope="col">Day</th><th scope="col">Fees and load margin</th><th scope="col">Costs</th><th scope="col">Net profit</th></tr></thead>
+        <thead><tr><th scope="col">Day</th><th scope="col">Fees and load margin</th><th scope="col">Tip income</th><th scope="col">Costs</th><th scope="col">Net profit</th></tr></thead>
         <tbody>
           {points.map((p) => (
-            <tr key={p.date}><th scope="row">{p.label}</th><td>{formatPesos(p.feesCents)}</td><td>{formatPesos(p.costsCents)}</td><td>{formatPesos(p.profitCents, { signed: true })}</td></tr>
+            <tr key={p.date}><th scope="row">{p.label}</th><td>{formatPesos(p.feesCents)}</td><td>{formatPesos(p.tipIncomeCents)}</td><td>{formatPesos(p.costsCents)}</td><td>{formatPesos(p.profitCents, { signed: true })}</td></tr>
           ))}
         </tbody>
       </table>

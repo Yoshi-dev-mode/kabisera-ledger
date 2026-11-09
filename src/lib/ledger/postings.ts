@@ -15,7 +15,7 @@ import { assertCentavos, type Centavos } from "@/lib/money";
 export const ACCOUNT_CODES = [
   "CASH_DRAWER", "GCASH_WALLET", "LOAD_BALANCE", "CUSTOMER_RECEIVABLES", "OWNER_EQUITY",
   "OPENING_BALANCE_EQUITY", "FEE_INCOME", "LOAD_MARGIN", "PROVIDER_COST", "BUSINESS_EXPENSES", "RECON_VARIANCE",
-  "DEBT_ADJUSTMENTS",
+  "DEBT_ADJUSTMENTS", "TIP_INCOME",
 ] as const;
 export type AccountCode = (typeof ACCOUNT_CODES)[number];
 
@@ -37,9 +37,9 @@ export type Method = "cash" | "gcash";
 export type PostingInput =
   | { type: "cash_in"; principalCents: number; feeCents: number; feeMode: FeeMode; creditCents?: number; providerCostCents?: number; customerId?: string | null }
   | { type: "cash_out"; principalCents: number; feeCents: number; feeMode: FeeMode; providerCostCents?: number; customerId?: string | null }
-  | { type: "mobile_load"; faceCents: number; costCents: number; priceCents: number; source: "gcash_direct" | "prepaid_wallet"; payment: Method; creditCents?: number; customerId?: string | null }
+  | { type: "mobile_load"; faceCents: number; costCents: number; priceCents: number; feeCents?: number | undefined; source: "gcash_direct" | "prepaid_wallet"; payment: Method; creditCents?: number; customerId?: string | null }
   | { type: "debt_creation"; customerId: string; amountCents: number; source: Method }
-  | { type: "debt_repayment"; customerId: string; amountCents: number; method: Method }
+  | { type: "debt_repayment"; customerId: string; amountCents: number; method: Method; tipCents?: number }
   /** Positive increases what the customer owes (a correction); negative reduces it (a discount or write-off). */
   | { type: "debt_adjustment"; customerId: string; amountCents: number }
   | { type: "expense"; amountCents: number; method: Method }
@@ -151,6 +151,8 @@ export function buildPostingLines(input: PostingInput): LedgerLine[] {
       positive(input.faceCents, "Load amount");
       const cost = positive(input.costCents, "Cost of the load");
       const price = positive(input.priceCents, "Selling price");
+      const fee = nonNegative(input.feeCents, "Service fee");
+      need(fee === 0 || price === input.faceCents + fee, "The total must equal the load amount plus the service fee");
       const credit = nonNegative(input.creditCents, "Unpaid amount");
       const customer = input.customerId ?? null;
       need(credit === 0 || customer !== null, "Choose a customer to leave an amount unpaid");
@@ -159,7 +161,8 @@ export function buildPostingLines(input: PostingInput): LedgerLine[] {
         line(methodAccount(input.payment), price - credit),
         line("CUSTOMER_RECEIVABLES", credit, customer),
         line(input.source === "prepaid_wallet" ? "LOAD_BALANCE" : "GCASH_WALLET", -cost),
-        line("LOAD_MARGIN", -(price - cost)),
+        line("LOAD_MARGIN", -(price - cost - fee)),
+        line("FEE_INCOME", -fee),
       ]);
     }
 
@@ -170,7 +173,13 @@ export function buildPostingLines(input: PostingInput): LedgerLine[] {
 
     case "debt_repayment": {
       const amount = positive(input.amountCents, "Amount");
-      return finish([line(methodAccount(input.method), amount), line("CUSTOMER_RECEIVABLES", -amount, input.customerId)]);
+      const tip = nonNegative(input.tipCents, "Tip");
+      const received = assertCentavos(amount + tip, "Total received");
+      return finish([
+        line(methodAccount(input.method), received),
+        line("CUSTOMER_RECEIVABLES", -amount, input.customerId),
+        line("TIP_INCOME", -tip),
+      ]);
     }
 
     case "debt_adjustment": {
@@ -229,20 +238,20 @@ export function reverseLines(lines: readonly LedgerLine[]): LedgerLine[] {
 export function balanceChanges(lines: readonly LedgerLine[]): Partial<Record<AccountCode, number>> {
   const out: Partial<Record<AccountCode, number>> = {};
   for (const l of lines) {
-    const creditNormal = ["OWNER_EQUITY", "OPENING_BALANCE_EQUITY", "FEE_INCOME", "LOAD_MARGIN"].includes(l.account);
+    const creditNormal = ["OWNER_EQUITY", "OPENING_BALANCE_EQUITY", "FEE_INCOME", "LOAD_MARGIN", "TIP_INCOME"].includes(l.account);
     out[l.account] = (out[l.account] ?? 0) + (creditNormal ? -l.amountCents : l.amountCents);
   }
   return out;
 }
 
 /**
- * Profit effect of an entry: fees and load margin earned, minus provider cost, operating expenses and debt write-offs.
+ * Profit effect of an entry: fees, load margin and tips, minus provider cost, operating expenses and debt write-offs.
  * Principal, repayments, capital and opening balances never count. Reconciliation variance is reported separately.
  */
 export function profitEffectCents(lines: readonly LedgerLine[]): number {
   let profit = 0;
   for (const l of lines) {
-    if (l.account === "FEE_INCOME" || l.account === "LOAD_MARGIN") profit -= l.amountCents;
+    if (l.account === "FEE_INCOME" || l.account === "LOAD_MARGIN" || l.account === "TIP_INCOME") profit -= l.amountCents;
     if (l.account === "PROVIDER_COST" || l.account === "BUSINESS_EXPENSES" || l.account === "DEBT_ADJUSTMENTS") profit -= l.amountCents;
   }
   return profit;

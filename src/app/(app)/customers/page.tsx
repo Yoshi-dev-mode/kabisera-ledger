@@ -39,7 +39,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           </div>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="status" className="text-[12px] text-muted-foreground">Show</label>
-            <select id="status" name="status" defaultValue={query.status} className="h-9 rounded-control border border-input bg-surface px-2 text-[14px]">
+            <select id="status" name="status" defaultValue={query.status} suppressHydrationWarning className="h-9 rounded-control border border-input bg-surface px-2 text-[14px]">
               <option value="active">Active</option>
               <option value="archived">Archived</option>
               <option value="all">All</option>

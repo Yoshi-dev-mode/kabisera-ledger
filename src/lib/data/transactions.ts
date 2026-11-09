@@ -36,6 +36,8 @@ export type TransactionRow = {
   principalCents: number;
   feeCents: number;
   customerPriceCents: number | null;
+  loadCostCents: number | null;
+  tipCents: number;
   creditCents: number;
   paymentMethod: string | null;
   gcashReference: string | null;
@@ -65,6 +67,8 @@ export function parseTransactionList(value: unknown): { rows: TransactionRow[]; 
       principalCents: int(r, "principal_cents"),
       feeCents: int(r, "fee_cents"),
       customerPriceCents: intOrNull(r, "customer_price_cents"),
+      loadCostCents: intOrNull(r, "load_cost_cents"),
+      tipCents: intOrNull(r, "tip_cents") ?? 0,
       creditCents: int(r, "credit_cents"),
       paymentMethod: strOrNull(r, "payment_method"),
       gcashReference: strOrNull(r, "gcash_reference"),

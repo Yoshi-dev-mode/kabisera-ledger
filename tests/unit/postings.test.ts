@@ -13,6 +13,18 @@ import {
   type PostingInput,
 } from "@/lib/ledger/postings";
 
+it.each(["cash", "gcash"] as const)("posts only the tip as income on a %s repayment", (method) => {
+  const lines = buildPostingLines({ type: "debt_repayment", customerId: "C1", amountCents: 100500, tipCents: 2000, method });
+  expect(balanceChanges(lines)).toEqual({
+    [method === "cash" ? "CASH_DRAWER" : "GCASH_WALLET"]: 102500,
+    CUSTOMER_RECEIVABLES: -100500,
+    TIP_INCOME: 2000,
+  });
+  expect(profitEffectCents(lines)).toBe(2000);
+  expect(profitEffectCents(lines.map((line) => ({ ...line, amountCents: -line.amountCents })))).toBe(-2000);
+  expect(() => buildPostingLines({ type: "debt_repayment", customerId: "C1", amountCents: 100500, tipCents: -1, method })).toThrow("Tip cannot be negative");
+});
+
 type Fixture = {
   cases: {
     name: string;

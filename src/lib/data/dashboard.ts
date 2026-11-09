@@ -31,6 +31,7 @@ export type DailySummary = {
   loadSalesCents: number;
   feesCents: number;
   loadMarginCents: number;
+  tipIncomeCents: number;
   providerCostCents: number;
   expensesCents: number;
   writeOffsCents: number;
@@ -48,6 +49,7 @@ export function parseDailySummary(value: unknown): DailySummary {
     loadSalesCents: int(r, "load_sales_cents"),
     feesCents: int(r, "fees_cents"),
     loadMarginCents: int(r, "load_margin_cents"),
+    tipIncomeCents: intOrNull(r, "tip_income_cents") ?? 0,
     providerCostCents: int(r, "provider_cost_cents"),
     expensesCents: int(r, "expenses_cents"),
     writeOffsCents: int(r, "write_offs_cents"),
@@ -56,13 +58,14 @@ export function parseDailySummary(value: unknown): DailySummary {
   };
 }
 
-export type DayPoint = { businessDate: string; feesCents: number; loadMarginCents: number; costsCents: number; netProfitCents: number; transactionCount: number };
+export type DayPoint = { businessDate: string; feesCents: number; loadMarginCents: number; tipIncomeCents: number; costsCents: number; netProfitCents: number; transactionCount: number };
 
 export function parseDailySeries(value: unknown): DayPoint[] {
   return asRows(value, "daily series").map((r) => ({
     businessDate: str(r, "business_date"),
     feesCents: int(r, "fees_cents"),
     loadMarginCents: int(r, "load_margin_cents"),
+    tipIncomeCents: intOrNull(r, "tip_income_cents") ?? 0,
     costsCents: int(r, "costs_cents"),
     netProfitCents: int(r, "net_profit_cents"),
     transactionCount: int(r, "transaction_count"),

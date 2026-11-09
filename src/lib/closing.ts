@@ -28,7 +28,7 @@ export function weekStart(date: string): string {
   return dt.toISOString().slice(0, 10);
 }
 
-export type GroupedPoint = { key: string; label: string; feesCents: number; loadMarginCents: number; costsCents: number; netProfitCents: number; transactionCount: number };
+export type GroupedPoint = { key: string; label: string; feesCents: number; loadMarginCents: number; tipIncomeCents: number; costsCents: number; netProfitCents: number; transactionCount: number };
 
 /** Adds up the daily figures by day, week (starting Monday) or month. Input need not be sorted; output is oldest first. */
 export function groupSeries(series: readonly DayPoint[], grain: Grain): GroupedPoint[] {
@@ -36,9 +36,10 @@ export function groupSeries(series: readonly DayPoint[], grain: Grain): GroupedP
   for (const d of series) {
     const key = grain === "day" ? d.businessDate : grain === "week" ? weekStart(d.businessDate) : d.businessDate.slice(0, 7);
     const label = grain === "day" ? shortDayLabel(d.businessDate) : grain === "week" ? `Week of ${shortDayLabel(key)}` : monthLabel(key);
-    const g = groups.get(key) ?? { key, label, feesCents: 0, loadMarginCents: 0, costsCents: 0, netProfitCents: 0, transactionCount: 0 };
+    const g = groups.get(key) ?? { key, label, feesCents: 0, loadMarginCents: 0, tipIncomeCents: 0, costsCents: 0, netProfitCents: 0, transactionCount: 0 };
     g.feesCents += d.feesCents;
     g.loadMarginCents += d.loadMarginCents;
+    g.tipIncomeCents += d.tipIncomeCents;
     g.costsCents += d.costsCents;
     g.netProfitCents += d.netProfitCents;
     g.transactionCount += d.transactionCount;
@@ -94,5 +95,5 @@ export function parseReportRange(params: Record<string, string | string[] | unde
 }
 
 export function groupedToChart(points: readonly GroupedPoint[]): ChartPoint[] {
-  return points.map((p) => ({ date: p.key, label: p.label, profitCents: p.netProfitCents, feesCents: p.feesCents + p.loadMarginCents, costsCents: p.costsCents }));
+  return points.map((p) => ({ date: p.key, label: p.label, profitCents: p.netProfitCents, feesCents: p.feesCents + p.loadMarginCents, tipIncomeCents: p.tipIncomeCents, costsCents: p.costsCents }));
 }

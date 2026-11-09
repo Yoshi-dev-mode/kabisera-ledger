@@ -5,7 +5,7 @@
 import type { FeeRule } from "@/lib/fees";
 import { computeFee, findFeeRule } from "@/lib/fees";
 import { buildPostingLines, balanceChanges, PostingError, profitEffectCents, type FeeMode, type LedgerLine, type PostingInput } from "@/lib/ledger/postings";
-import { MoneyError, parsePesos, percentOfBps, type Rounding } from "@/lib/money";
+import { MAX_CENTAVOS, MoneyError, parsePesos, percentOfBps, type Rounding } from "@/lib/money";
 
 export type Effects = {
   cash: number;
@@ -48,6 +48,15 @@ export function requiredCents(text: string | undefined): number | null {
   return optionalCents(text);
 }
 
+export function calculateLoadSale(faceCents: number | null, feeCents: number | null, configuredCost: number | null = null) {
+  if (faceCents === null || faceCents <= 0) return { ok: false, message: "Enter a load amount greater than zero." } as const;
+  if (feeCents === null || feeCents < 0) return { ok: false, message: "Enter a valid service fee of zero or more." } as const;
+  if (faceCents + feeCents > MAX_CENTAVOS) return { ok: false, message: "The customer total is too large." } as const;
+  const costCents = configuredCost ?? faceCents;
+  if (costCents <= 0) return { ok: false, message: "The calculated cost must be greater than zero. Check the load amount or product cost settings." } as const;
+  return { ok: true, costCents, priceCents: faceCents + feeCents } as const;
+}
+
 function tryBuild(input: PostingInput): Preview {
   try {
     const lines = buildPostingLines(input);
@@ -87,6 +96,7 @@ export type LoadFields = {
   face: string;
   cost: string;
   price: string;
+  feeCents?: number;
   source: "gcash_direct" | "prepaid_wallet";
   payment: "cash" | "gcash";
   unpaid: string;
@@ -101,7 +111,7 @@ export function previewLoad(f: LoadFields): Preview {
   const unpaid = optionalCents(f.unpaid);
   if (unpaid === null) return { ok: false, message: "The unpaid amount is not valid." };
   return tryBuild({
-    type: "mobile_load", faceCents: face, costCents: cost, priceCents: price, source: f.source, payment: f.payment,
+    type: "mobile_load", faceCents: face, costCents: cost, priceCents: price, feeCents: f.feeCents, source: f.source, payment: f.payment,
     creditCents: unpaid, customerId: f.customerId === "" ? null : f.customerId,
   });
 }

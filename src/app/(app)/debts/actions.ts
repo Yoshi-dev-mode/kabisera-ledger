@@ -8,7 +8,8 @@ import { failure, success, type ActionState } from "@/lib/action-state";
 import { getActionSession, getOwnerActionSession } from "@/lib/auth/session";
 import { parseImportResult, parsePostResult } from "@/lib/data/debts";
 import { friendlyDbError } from "@/lib/errors";
-import { formDate, formMethod, formMoney, formText } from "@/lib/forms";
+import { formDate, formMethod, formMoney, formText, optionalMoney } from "@/lib/forms";
+import { MAX_CENTAVOS } from "@/lib/money";
 import { parseOpeningDebtsSeed, SeedError } from "@/lib/opening-debts";
 import { createClient } from "@/lib/supabase/server";
 import { isBusinessDateString } from "@/lib/time";
@@ -24,13 +25,16 @@ export async function recordRepaymentAction(_previous: ActionState, formData: Fo
   const customerId = formText(formData, "customerId");
   const debtId = formText(formData, "debtId");
   const method = formMethod(formData, "method");
-  const amount = formMoney(formData, "amount", "the amount received");
-  const reference = limited(formText(formData, "gcashReference"), 64);
+  const amount = formMoney(formData, "amount", "the debt payment");
+  const tip = optionalMoney(formData, "tip", "the tip");
+  const reference = method === "gcash" ? limited(formText(formData, "gcashReference"), 64) : "";
   const notes = limited(formText(formData, "notes"), 500);
   if (!isUuid(key)) return failure("This form expired. Reload the page and try again.");
   if (!isUuid(customerId)) return failure("Choose a customer.");
   if (debtId !== "" && !isUuid(debtId)) return failure("That debt was not found.");
   if (!amount.ok) return failure(amount.message);
+  if (!tip.ok) return failure(tip.message);
+  if (amount.cents + tip.cents > MAX_CENTAVOS) return failure("The total received is too large.");
   if (!method) return failure("Choose cash or GCash.");
   if (reference === null || notes === null) return failure("The reference or notes are too long.");
 
@@ -39,11 +43,15 @@ export async function recordRepaymentAction(_previous: ActionState, formData: Fo
     p_idempotency_key: key,
     p_customer_id: customerId,
     p_amount_cents: amount.cents,
+    ...(tip.cents > 0 ? { p_tip_cents: tip.cents } : {}),
     p_method: method,
     p_debt_id: debtId === "" ? null : debtId,
     p_gcash_reference: reference === "" ? null : reference,
     p_notes: notes === "" ? null : notes,
   });
+  if (error?.code === "PGRST202") {
+    return failure("Repayment could not be saved because the database is missing the latest repayment update. Ask the owner to update the database, then try again.");
+  }
   if (error) return failure(friendlyDbError(error, "The repayment could not be recorded."));
   const result = parsePostResult(data);
   revalidatePath("/debts");

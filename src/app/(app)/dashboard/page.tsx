@@ -101,6 +101,7 @@ export default async function DashboardPage() {
                   <Kpi label="Transactions">{summary.transactionCount}{summary.voidedCount ? <span className="text-[12px] text-muted-foreground"> (+{summary.voidedCount} voided)</span> : null}</Kpi>
                   <Kpi label="Service fees earned"><Money cents={summary.feesCents} /></Kpi>
                   <Kpi label="Load margin"><Money cents={summary.loadMarginCents} /></Kpi>
+                  <Kpi label="Tip income"><Money cents={summary.tipIncomeCents} /></Kpi>
                   <Kpi label="Costs and expenses" note="Provider costs, expenses, write-offs"><Money cents={summary.providerCostCents + summary.expensesCents + summary.writeOffsCents} /></Kpi>
                   <Kpi label="Net profit today" strong><Money cents={summary.netProfitCents} signed /></Kpi>
                 </dl>
@@ -109,7 +110,7 @@ export default async function DashboardPage() {
                   <Kpi label="Cash-out volume"><Money cents={summary.cashOutVolumeCents} /></Kpi>
                   <Kpi label="Load sold"><Money cents={summary.loadSalesCents} /></Kpi>
                 </dl>
-                <p className="mt-3 text-[12px] text-muted-foreground">Volume is the money that passed through. It is not income. Only fees and load margin are earned, and profit is those minus costs. A void made today is counted today.</p>
+                <p className="mt-3 text-[12px] text-muted-foreground">Net profit includes service fees, load margin and tips, minus costs. Repayment principal reduces customer debt. A void made today is counted today.</p>
                 {summary.varianceCents !== 0 ? <p className="mt-1 text-[12px] text-muted-foreground">Counting differences are reported separately: <Money cents={-summary.varianceCents} signed />.</p> : null}
               </>
             ) : activity ? (
@@ -122,7 +123,7 @@ export default async function DashboardPage() {
           {series ? (
             <section aria-labelledby="chart-title" className="rounded-card bg-surface p-5">
               <h2 id="chart-title" className="text-[16px] leading-6 font-medium">Net profit, last 14 days</h2>
-              <p className="mt-0.5 text-[13px] text-muted-foreground">Fees and load margin, minus costs. Not transaction volume.</p>
+              <p className="mt-0.5 text-[13px] text-muted-foreground">Fees, load margin and tips, minus costs.</p>
               <div className="mt-3"><ProfitChart points={toChartPoints(series)} /></div>
             </section>
           ) : null}

@@ -73,7 +73,7 @@ A customer's page and the Transactions page read the same `transactions` rows. A
 | Word | Meaning |
 |---|---|
 | Transaction volume | The amounts that moved (principal). Not revenue, not profit. |
-| Earned | Service fees from cash-in and cash-out, plus mobile-load margin (selling price minus cost). |
+| Earned | Service fees, mobile-load margin (selling price minus cost), and voluntary tips recorded on debt repayments. |
 | Costs | Provider costs, operating expenses and debt write-offs. |
 | Net profit | Earned minus costs. Counting differences are reported separately and are not in it. |
 | Expected balance | Sum of the ledger lines for the account (entries dated on or before the day, for a closing). |

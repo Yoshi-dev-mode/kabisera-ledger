@@ -16,7 +16,7 @@ describe("describeVariance (variance = counted - expected)", () => {
 });
 
 describe("grouping the series", () => {
-  const day = (businessDate: string, net: number, n = 1): DayPoint => ({ businessDate, feesCents: net, loadMarginCents: 0, costsCents: 0, netProfitCents: net, transactionCount: n });
+  const day = (businessDate: string, net: number, n = 1): DayPoint => ({ businessDate, feesCents: net, loadMarginCents: 0, tipIncomeCents: 0, costsCents: 0, netProfitCents: net, transactionCount: n });
   it("finds the Monday of a week, across month and year ends", () => {
     expect(weekStart("2026-10-26")).toBe("2026-10-26"); // a Monday
     expect(weekStart("2026-10-25")).toBe("2026-10-19"); // Sunday belongs to the week before
@@ -67,7 +67,8 @@ describe("report CSV exports", () => {
     expect(csv).toContain("Cash-in volume (1),1000.00");
     expect(csv).toContain("Operating expenses,-50.00");
     expect(csv).toContain("NET PROFIT,-17.00");
-    expect(csv).toContain("Repayments received,300.00,not income");
+    expect(csv).toContain("Debt payments,300.00,excludes tips");
+    expect(periodCsv({ ...period, tipIncomeCents: 2000, netProfitCents: 300 }, "2026-10-01", "2026-10-31", at)).toContain("Tip income,20.00");
     expect(csv).toContain("reported separately, not in profit");
     expect(csv.startsWith("\uFEFF")).toBe(true);
     expect(csv).toContain("Generated 2026-10-25 10:00 Philippine time");
@@ -76,7 +77,7 @@ describe("report CSV exports", () => {
     expect(floatCsv([{ code: "CASH_DRAWER", name: "Cash drawer", openingCents: 100, inflowCents: 250, outflowCents: -50, closingCents: 300 }], "2026-10-01", "2026-10-31", at)).toContain("Cash drawer,1.00,2.50,-0.50,3.00");
     expect(staffCsv([{ staffName: "=Evil", transactionCount: 2, volumeCents: 500, feesCents: 10 }], at)).toContain("'=Evil,2,5.00,0.10");
     expect(discrepanciesCsv([{ businessDate: "2026-10-23", revision: 1, accountName: "Cash drawer", expectedCents: 1000, actualCents: 900, varianceCents: -100, reason: "short change" }], at)).toContain("-1.00,short change");
-    expect(seriesCsv([{ key: "2026-10", label: "October 2026", feesCents: 100, loadMarginCents: 0, costsCents: 50, netProfitCents: 50, transactionCount: 3 }], at)).toContain("October 2026,3,1.00,0.00,-0.50,0.50");
+    expect(seriesCsv([{ key: "2026-10", label: "October 2026", feesCents: 100, loadMarginCents: 0, tipIncomeCents: 20, costsCents: 50, netProfitCents: 70, transactionCount: 3 }], at)).toContain("October 2026,3,1.00,0.00,0.20,-0.50,0.70");
   });
 });
 
@@ -114,7 +115,7 @@ describe("report date range", () => {
     expect(daysBetween("2026-10-01", "2026-10-24")).toBe(23);
   });
   it("turns grouped points into chart points", () => {
-    expect(groupedToChart([{ key: "2026-10", label: "October 2026", feesCents: 100, loadMarginCents: 20, costsCents: 50, netProfitCents: 70, transactionCount: 3 }]))
-      .toEqual([{ date: "2026-10", label: "October 2026", profitCents: 70, feesCents: 120, costsCents: 50 }]);
+    expect(groupedToChart([{ key: "2026-10", label: "October 2026", feesCents: 100, loadMarginCents: 20, tipIncomeCents: 30, costsCents: 50, netProfitCents: 100, transactionCount: 3 }]))
+      .toEqual([{ date: "2026-10", label: "October 2026", profitCents: 100, feesCents: 120, tipIncomeCents: 30, costsCents: 50 }]);
   });
 });

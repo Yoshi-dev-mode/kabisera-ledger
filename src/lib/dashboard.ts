@@ -81,7 +81,7 @@ export function compactPesos(cents: number): string {
   return `${sign}₱${trim(pesos)}`;
 }
 
-export type ChartPoint = { date: string; label: string; profitCents: number; feesCents: number; costsCents: number };
+export type ChartPoint = { date: string; label: string; profitCents: number; feesCents: number; tipIncomeCents: number; costsCents: number };
 
 export function toChartPoints(series: readonly DayPoint[]): ChartPoint[] {
   return series.map((d) => ({
@@ -89,6 +89,7 @@ export function toChartPoints(series: readonly DayPoint[]): ChartPoint[] {
     label: shortDayLabel(d.businessDate),
     profitCents: d.netProfitCents,
     feesCents: d.feesCents + d.loadMarginCents,
+    tipIncomeCents: d.tipIncomeCents,
     costsCents: d.costsCents,
   }));
 }

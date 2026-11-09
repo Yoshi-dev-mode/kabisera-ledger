@@ -49,6 +49,36 @@ test.describe("owner flows", () => {
     await expect(page.getByRole("region", { name: "What will happen" })).toContainText("Choose a customer");
   });
 
+  test("mobile load adds the service fee to the full amount owed", async ({ page }) => {
+    await signIn(page);
+    await page.goto("/transactions/new?type=mobile_load");
+    await page.getByLabel("Load amount (₱)").fill("100");
+    await page.getByLabel("Service fee (₱)").fill("3");
+    await expect(page.getByText("Customer total: ₱103.00")).toBeVisible();
+    await expect(page.getByText("Business cost: ₱100.00")).toBeVisible();
+    await page.getByLabel("Pay later in full").check();
+    await expect(page.getByLabel("Amount owed (₱)")).toHaveValue("103.00");
+    await page.getByLabel("Service fee (₱)").fill("-1");
+    await expect(page.getByRole("button", { name: "Record mobile load" })).toBeDisabled();
+    await expect(page.getByText("Enter a valid service fee of zero or more.")).toBeVisible();
+  });
+
+  test("repayment previews tips separately and only shows a GCash reference for GCash", async ({ page }) => {
+    await signIn(page);
+    await page.goto("/debts/repayment");
+    const customer = page.getByLabel("Customer", { exact: true });
+    test.skip(!(await customer.count()), "requires an outstanding debt in the test database");
+    await customer.selectOption({ index: 1 });
+    await page.getByLabel("Debt payment (₱)").fill("0.01");
+    await page.getByLabel("Tip (₱, optional)").fill("20");
+    await expect(page.getByText("₱20.01", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("GCash reference (optional)")).toHaveCount(0);
+    await page.getByRole("radio", { name: "GCash" }).check();
+    await expect(page.getByLabel("GCash reference (optional)")).toBeVisible();
+    await page.getByLabel("Tip (₱, optional)").fill("-1");
+    await expect(page.getByRole("button", { name: "Record repayment" })).toBeDisabled();
+  });
+
   test("the first thing a keyboard user reaches is the skip link", async ({ page }) => {
     await signIn(page);
     await page.keyboard.press("Tab");

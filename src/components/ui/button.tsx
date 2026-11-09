@@ -36,8 +36,11 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button";
-    return <Comp ref={ref} className={cn(buttonVariants({ variant, size }), className)} {...props} />;
+    const classes = cn(buttonVariants({ variant, size }), className);
+    if (asChild) return <Slot ref={ref} className={classes} {...props} />;
+
+    // Browser autofill tools can add fdprocessedid before React hydrates.
+    return <button ref={ref} className={classes} suppressHydrationWarning {...props} />;
   },
 );
 Button.displayName = "Button";

@@ -20,8 +20,8 @@ For the owner and staff. Use **test data** until `docs/TESTING.md` has been comp
 - *Cash-in*: the customer hands you cash and you send GCash. *Cash-out*: the customer sends GCash and you hand over cash.
 - The amount is what the customer asked for. The fee is either **on top** (they pay or send extra) or **deducted** (they receive less). The box "What will happen" shows the effect on cash, GCash, owed money and profit before you save.
 - For a cash-in or mobile-load sale on credit, choose the customer and tick *Pay later in full*. For a partial payment, enter only the balance under *Left unpaid*. The balance becomes a customer debt.
-- *Mobile load*: choose the network or load product, confirm where the load came from, and enter your actual cost and selling price. The difference is your load margin.
-- When the customer pays later, use *Debts > Record repayment* and select the debt from the original transaction.
+- *Mobile load*: choose the network or load product and confirm where the load came from. Enter the load amount and any service fee. The customer pays or owes the sum of both. The load source is charged the load amount, or the product cost if a cost percentage is configured.
+- When the customer pays later, use *Debts > Record repayment*. Enter only what goes toward the debt as the debt payment. Enter any voluntary extra amount in *Tip*. The summary shows the total received and the remaining debt.
 - A cash advance (utang) is under Debts > New cash advance; repayments under Debts > Record repayment.
 - If the screen says there is not enough in a balance, something is wrong with the entry or the counts. Only the owner can override, and must give a reason.
 

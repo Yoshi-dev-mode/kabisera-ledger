@@ -1,5 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { centsToInput, optionalCents, previewLoad, previewService, requiredCents, suggestFee, suggestLoadCost } from "@/lib/entry";
+import { calculateLoadSale, centsToInput, optionalCents, previewLoad, previewService, requiredCents, suggestFee, suggestLoadCost } from "@/lib/entry";
+
+it("adds the service fee to the load amount and honors the configured cost", () => {
+  expect(calculateLoadSale(10000, 300)).toEqual({ ok: true, costCents: 10000, priceCents: 10300 });
+  expect(calculateLoadSale(10000, 300, 9700)).toEqual({ ok: true, costCents: 9700, priceCents: 10300 });
+  expect(calculateLoadSale(10000, 0)).toEqual({ ok: true, costCents: 10000, priceCents: 10000 });
+  for (const [amount, fee] of [[0, 0], [100, -1], [100, null], [100_000_000_000, 1]] as const) {
+    expect(calculateLoadSale(amount, fee).ok).toBe(false);
+  }
+});
+
+it("includes the service fee in a fully unpaid mobile-load sale", () => {
+  const result = previewLoad({ face: "100", cost: "100", price: "103", feeCents: 300, source: "prepaid_wallet", payment: "cash", unpaid: "103", customerId: "C1" });
+  expect(result).toMatchObject({ ok: true, effects: { cash: 0, load: -10000, owed: 10300, profit: 300 } });
+  if (result.ok) expect(result.lines).toContainEqual({ account: "FEE_INCOME", customerId: null, amountCents: -300 });
+});
 import type { FeeRule } from "@/lib/fees";
 import { DEFAULT_SETTINGS, parseCategories, parseFeeRules, parseLoadProducts, parseSettings, parseThresholds } from "@/lib/data/settings";
 
@@ -36,7 +51,7 @@ describe("previewService", () => {
   });
 
   it("explains problems instead of throwing", () => {
-    expect(previewService({ ...base, amount: "" })).toEqual({ ok: false, message: "Enter the amount to see what will happen." });
+    expect(previewService({ ...base, amount: "" })).toEqual({ ok: false, message: "Please put some amount first." });
     expect(previewService({ ...base, fee: "x" })).toEqual({ ok: false, message: "One of the amounts is not valid." });
     expect(previewService({ ...base, unpaid: "500" })).toEqual({ ok: false, message: "Choose a customer to leave an amount unpaid" });
     expect(previewService({ ...base, type: "cash_out", unpaid: "5", customerId: "C1" })).toEqual({ ok: false, message: "A cash-out cannot be left unpaid." });
